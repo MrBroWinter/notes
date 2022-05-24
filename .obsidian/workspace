@@ -1,0 +1,129 @@
+{
+  "main": {
+    "id": "48c8c5a540ae1509",
+    "type": "split",
+    "children": [
+      {
+        "id": "9f296e7a5723f2bb",
+        "type": "leaf",
+        "state": {
+          "type": "markdown",
+          "state": {
+            "file": "python_lessons/lesson_1.md",
+            "mode": "preview"
+          }
+        }
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "e1eb1b423cd5727d",
+    "type": "split",
+    "children": [
+      {
+        "id": "956b6747af807ae1",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "2854ce49da01c88b",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {}
+            }
+          },
+          {
+            "id": "4adbe3b342199f22",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              }
+            }
+          },
+          {
+            "id": "511d25002f68916c",
+            "type": "leaf",
+            "state": {
+              "type": "starred",
+              "state": {}
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 329
+  },
+  "right": {
+    "id": "75b559de62990952",
+    "type": "split",
+    "children": [
+      {
+        "id": "2c8e67e1cb9d7ce2",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "72cc730230c8b68a",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "python_lessons/lesson_1.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": true,
+                "unlinkedCollapsed": true
+              }
+            }
+          },
+          {
+            "id": "349ce26c5b031b14",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true
+              }
+            }
+          },
+          {
+            "id": "30c48f18989dfdc6",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "python_lessons/lesson_1.md"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "active": "9f296e7a5723f2bb",
+  "lastOpenFiles": [
+    "python_lessons/lesson_1.md",
+    "general/git.md",
+    "general/linux指令.md",
+    "general/tmux.md",
+    "general/vim.md",
+    "general/推想专用.md",
+    "00 inbox/demo1.md",
+    "00 inbox/lesson_1.md",
+    "obsidian.md"
+  ]
+}
