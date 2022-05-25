@@ -43,15 +43,16 @@ $$E=mc^2$$
 ## 分割线
 ___
 
-[ TOC ]
+## 注释
+<!-- 这行不显示-->
 
+---
 ## 链接
 [markdown学习链接](https://blog.csdn.net/afei__/article/details/80717153) 
 
 [cmd markdown](https://www.zybuluo.com/mdeditor)
 ## 代码
 ``` python
-
 from functools import reduce  
   
 """filter"""  
@@ -76,8 +77,8 @@ N = 100
 print(reduce(lambda x,y: x+y, map(lambda d: math.sqrt(d), filter(lambda p : 0 not in list(map(lambda q: p % q, range(2, int(math.sqrt(p) + 1)))), range(1, 100)))))
 ```
 ## 任务列表
-- [ ]  快捷键Ctrl + Enter
-- [x] 
+- [x] 入门  <!-- 快捷键Ctrl + Enter-->
+- [ ] 进阶
 
 ## 表格
 | 项目        | 价格   |  数量  |

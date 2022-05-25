@@ -38,15 +38,15 @@ git reset --hard 'commit ID'
 
 ### submodule的push操作
 1. 将submodule中修改的模块checkout一个分支，将修改后的模块push上去
-2. git fetch origin *会显示修改后的模块后面跟着（new commits）*
+2. git fetch origin *会显示改动后的模块后面跟着（new commits）*
 ![](file:////tmp/wps-zdongdong/ksohtml/wps1inZyQ.jpg)
 3.  最后正常git add/commit/push(最好先创建分支)
 
-## git设置
-git config --global alias.lg "log --color --graph --branches --pretty=format:'%C(auto)%h %C(auto)%d %C(auto)%s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --decorate --abbrev-commit --all" *可以更好可视化*
+## git设置(更好显示版本迭代的情况)
+git config --global alias.lg "log --color --graph --branches --pretty=format:'%C(auto)%h %C(auto)%d %C(auto)%s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --decorate --abbrev-commit --all"
 
 ## 设置上传url地址
-git remote set-url [--push] <name> <newurl> [<oldurl>]
+git remote set-url origin <地址>
 
 # 修改为想要设置的远程仓库
 git remote set-url origin ssh://git@code.infervision.com:2022/algorithm/alchemy/heart-cta/seg_aortic_dissection2.git

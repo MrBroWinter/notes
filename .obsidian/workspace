@@ -9,7 +9,7 @@
         "state": {
           "type": "markdown",
           "state": {
-            "file": "python_lessons/lesson_1.md",
+            "file": "python_lessons/自学.md",
             "mode": "preview"
           }
         }
@@ -76,7 +76,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "python_lessons/lesson_1.md",
+                "file": "python_lessons/自学.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -104,7 +104,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "python_lessons/lesson_1.md"
+                "file": "python_lessons/自学.md"
               }
             }
           }
@@ -116,13 +116,14 @@
   },
   "active": "9f296e7a5723f2bb",
   "lastOpenFiles": [
+    "python_lessons/自学.md",
     "python_lessons/lesson_1.md",
-    "general/git.md",
-    "general/linux指令.md",
-    "general/tmux.md",
-    "general/vim.md",
-    "general/推想专用.md",
     "00 inbox/demo1.md",
+    "general/vim.md",
+    "general/tmux.md",
+    "general/linux指令.md",
+    "general/git.md",
+    "general/推想专用.md",
     "00 inbox/lesson_1.md",
     "obsidian.md"
   ]
