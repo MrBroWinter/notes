@@ -123,12 +123,11 @@ print('\n')
 print(a_function_requiring_decoration.__name__)
 ```
 
->I am doing some boring work before executing a_func()
+> I am doing some boring work before executing a_func()
 I am the function which needs some decoration to remove my foul smell
 I am doing some boring work after executing a_func()
 
->
-a_function_requiring_decoration
+> a_function_requiring_decoration
 
 
 # collections
