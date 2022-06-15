@@ -4,7 +4,7 @@
     "type": "split",
     "children": [
       {
-        "id": "9f296e7a5723f2bb",
+        "id": "2c9bf440d8ddf4d1",
         "type": "leaf",
         "state": {
           "type": "markdown",
@@ -114,17 +114,17 @@
     "direction": "horizontal",
     "width": 300
   },
-  "active": "9f296e7a5723f2bb",
+  "active": "2c9bf440d8ddf4d1",
   "lastOpenFiles": [
     "general/图卷积.md",
-    "general/python进阶.md",
     "general/vim.md",
-    "general/git.md",
-    "general/Loss Function.md",
-    "00 inbox/demo1.md",
-    "python_lessons/自学.md",
-    "python_lessons/lesson_1.md",
+    "general/utils.md",
     "general/tmux.md",
+    "attachment/Pasted image 20220615164947.png",
+    "attachment/Pasted image 20220519153442.png",
+    "attachment/Pasted image 20220519153219.png",
+    "general/目标检测.md",
+    "general/Loss Function.md",
     "general/linux指令.md"
   ]
 }

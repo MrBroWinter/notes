@@ -1,71 +1,116 @@
-# 边缘损失函数
+# 损失函数
 
-[损失函数链接](https://github.com/LIVIAETS/boundary-loss)
+[损失函数链接](https://github.com/MrBroWinter/pulmonary_vessel_seg/blob/main/losses3D/losses_1.py)
+
+## focal loss 公式
+![[Pasted image 20220615164947.png]]
 
 ```python
-#!/usr/env/bin python3.9  
-
-from typing import List, cast  
+# -*- coding:utf-8 -*-  
+import torch as t  
+from torch import nn  
+import torch.nn.functional as F  
+from math import exp  
   
-import torch  
 import numpy as np  
-from torch import Tensor, einsum  
-
-
-class SurfaceLoss(torch.nn.Module):  
+  
+  
+class DiceLoss(nn.Module):  
     def __init__(self):  
-    	super(SurfaceLoss, self).__init__()
+        super(DiceLoss, self).__init__()  
+        self.smooth = 1e-3  
   
-    def __call__(self, probs: Tensor, dist_maps: Tensor) -> Tensor:   
+    def dsc(self, y_pred, y_true):  
+        batch_size = y_true.size(0)  
+        m1 = y_true.view(batch_size, -1)  
+        m2 = y_pred.view(batch_size, -1)  
+        intersection = m1 * m2  
+        score = (2. * intersection.sum(1) + self.smooth) / (m1.sum(1) + m2.sum(1) + self.smooth)  
+        score = score.sum() / batch_size  
+        return score  
   
-        pc = probs.type(torch.float32)  
-        dc = dist_maps.type(torch.float32)  
-  
-        multipled = einsum("bkwhj,bkwhj->bkwhj", pc, dc)  
-  
-        loss = multipled.mean()  
-  
+    def forward(self, y_pred, y_true):  
+        loss = 1 - self.dsc(y_pred, y_true)  
         return loss  
-
   
   
-class HausdorffLoss():  
-    """  
-    Implementation heavily inspired from https://github.com/JunMa11/SegWithDistMap    """    def __init__(self, **kwargs):  
-        # Self.idc is used to filter out some classes of the target mask. Use fancy indexing  
-        self.idc: List[int] = kwargs["idc"]  
-        print(f"Initialized {self.__class__.__name__} with {kwargs}")  
+class BCEDiceLoss(nn.Module):  
+    def __init__(self):  
+        super(BCEDiceLoss, self).__init__()  
+        self.dice_loss = DiceLoss()  
   
-    def __call__(self, probs: Tensor, target: Tensor) -> Tensor:  
-        assert simplex(probs)  
-        assert simplex(target)  
-        assert probs.shape == target.shape  
+    def forward(self, y_pred, y_true):  
+        dice_loss = self.dice_loss(y_pred, y_true)  
+        bce_loss = nn.BCELoss()(y_pred, y_true)  
+        return dice_loss + bce_loss  
   
-        B, K, *xyz = probs.shape  # type: ignore  
   
-        pc = cast(Tensor, probs[:, self.idc, ...].type(torch.float32))  
-        tc = cast(Tensor, target[:, self.idc, ...].type(torch.float32))  
-        assert pc.shape == tc.shape == (B, len(self.idc), *xyz)  
+class TverskyLoss(nn.Module):  
+    def __init__(self, alpha=0.3, beta=0.7):  
+        super(TverskyLoss, self).__init__()  
+        self.alpha = alpha  # 假阳性的惩罚系数  
+        self.beta = beta  # 假阴性的惩罚系数  
+        self.smooth = 1e-3  
   
-        target_dm_npy: np.ndarray = np.stack([one_hot2hd_dist(tc[b].cpu().detach().numpy())  
-                                              for b in range(B)], axis=0)  
-        assert target_dm_npy.shape == tc.shape == pc.shape  
-        tdm: Tensor = torch.tensor(target_dm_npy, device=probs.device, dtype=torch.float32)  
+    def tversky(self, y_pred, y_true):  
+        batch_size = y_true.size(0)  
+        m1 = y_true.view(batch_size, -1)  
+        m2 = y_pred.view(batch_size, -1)  
+        # intersection = m1 * m2  
+        true_pos = m1 * m2  
+        false_pos = m2 * (1 - m1)  
+        false_neg = m1 * (1 - m2)  
+        score = (true_pos.sum(1) + self.smooth) / (  
+                    true_pos.sum(1) + self.alpha * false_pos.sum(1) + self.beta * false_neg.sum(1) + self.smooth)  
+        return score.sum() / batch_size  
   
-        pred_segmentation: Tensor = probs2one_hot(probs).cpu().detach()  
-        pred_dm_npy: np.nparray = np.stack([one_hot2hd_dist(pred_segmentation[b, self.idc, ...].numpy())  
-                                            for b in range(B)], axis=0)  
-        assert pred_dm_npy.shape == tc.shape == pc.shape  
-        pdm: Tensor = torch.tensor(pred_dm_npy, device=probs.device, dtype=torch.float32)  
-  
-        delta = (pc - tc)**2  
-        dtm = tdm**2 + pdm**2  
-  
-        multipled = einsum("bkwh,bkwh->bkwh", delta, dtm)  
-  
-        loss = multipled.mean()  
-  
+    def forward(self, y_pred, y_true):  
+        loss = 1 - self.tversky(y_pred, y_true)  
         return loss  
+  
+  
+class FocalTverskyLoss(nn.Module):  
+    def __init__(self, gamma=0.75, alpha=0.3, beta=0.7):  
+        super(FocalTverskyLoss, self).__init__()  
+        self.alpha = alpha  
+        self.beta = beta  
+        self.gamma = gamma  
+        self.tversky_loss = TverskyLoss(self.alpha, self.beta)  
+  
+    def forward(self, y_pred, y_true):  
+        pt_1 = self.tversky_loss(y_pred, y_true)  
+        return t.pow((1 - pt_1), self.gamma)  
+  
+  
+class FocalLoss(nn.Module):  
+    def __init__(self, alpha=0.25, gamma=2, logits=False, reduce=True):  
+        super(FocalLoss, self).__init__()  
+        self.alpha = alpha  
+        self.gamma = gamma  
+        self.logits = logits  
+        self.reduce = reduce  
+  
+    def forward(self, inputs, targets):  
+        if self.logits:  
+            BCE_loss = F.binary_cross_entropy_with_logits(inputs, targets, reduce=None)  
+        else:  
+            BCE_loss = F.binary_cross_entropy(inputs, targets, reduce=None)  
+        pt = t.exp(-BCE_loss)  
+        F_loss = self.alpha * (1 - pt) ** self.gamma * BCE_loss  
+  
+        if self.reduce:  
+            return t.mean(F_loss)  
+        else:  
+            return F_loss  
+  
+  
+if __name__ == "__main__":  
+    y_true = t.randn((5, 1, 55, 55))  
+    y_pred = t.randn((5, 1, 55, 55))  
+    print(DiceLoss()(y_true, y_pred))  
+    print(TverskyLoss(alpha=0.1, beta=0.2)(y_true, y_pred))  
+    print(FocalTverskyLoss(gamma=0.72, alpha=0.1, beta=0.2)(y_true, y_pred))
+ 
 
 ```
 
