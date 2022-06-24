@@ -50,3 +50,8 @@ git remote set-url origin <地址>
 
 # 修改为想要设置的远程仓库
 git remote set-url origin ssh://git@code.infervision.com:2022/algorithm/alchemy/heart-cta/seg_aortic_dissection2.git
+
+## 删除tag
+git tag -d <tag名>
+
+git push origin :refs/tags/<tag名>
