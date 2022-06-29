@@ -9,8 +9,8 @@
         "state": {
           "type": "markdown",
           "state": {
-            "file": "general/git.md",
-            "mode": "preview"
+            "file": "general/推想专用.md",
+            "mode": "source"
           }
         }
       }
@@ -76,7 +76,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "general/git.md",
+                "file": "general/推想专用.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -104,7 +104,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "general/git.md"
+                "file": "general/推想专用.md"
               }
             }
           }
@@ -116,15 +116,15 @@
   },
   "active": "2c9bf440d8ddf4d1",
   "lastOpenFiles": [
-    "general/git.md",
-    "general/python进阶.md",
+    "general/推想专用.md",
+    "general/Loss Function.md",
     "general/python加速（C++）.md",
-    "general/数据结构算法.md",
-    "general/图卷积.md",
-    "general/vim.md",
+    "general/python进阶.md",
     "general/utils.md",
     "general/tmux.md",
-    "attachment/Pasted image 20220615164947.png",
-    "attachment/Pasted image 20220519153442.png"
+    "general/git.md",
+    "general/数据结构算法.md",
+    "general/图卷积.md",
+    "general/vim.md"
   ]
 }

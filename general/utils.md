@@ -220,10 +220,6 @@ def resampleVolume(vol, outspacing, mask=False):
     newvol = resampler.Execute(vol)
     return newvol
 
-
-
-
-
 # -------------------------
 # 1/2重叠滑块预测
 # -------------------------
@@ -286,7 +282,7 @@ def overlap_predict(net, ct, patch_size, rate=2):
     tmp_res = tmp_res / num_array  # 对应像素点叠加预测的结果除以相对应的次数，得到预测平均值
     return tmp_res[0:ct.shape[0], 0:ct.shape[1], 0:ct.shape[2]]
 
-
+---------------------------------------------------------------------------
 def keep_maximum_volume(mask):
     """
     :param mask:  二值图像（3D）
@@ -307,7 +303,7 @@ def keep_maximum_volume(mask):
     res = np.in1d(label_mask, list(valid_label)).reshape(label_mask.shape).astype(int)
     # res = closing(res)
     return res
-
+---------------------------------------------------------------------------
 def remove_small_volume(mask, threshold=800):
     """
     :param mask:  二值图像（3D）
@@ -323,7 +319,7 @@ def remove_small_volume(mask, threshold=800):
         #print(i)
     res = np.in1d(label_mask, list(valid_label)).reshape(label_mask.shape).astype(int)
     return res
-
+---------------------------------------------------------------------------
 import itertools
 def detect_endpoint(center_line):
     """
@@ -352,7 +348,7 @@ def detect_endpoint(center_line):
                         num_endpoint += 1
 
     return end_point, coordinates, num_endpoint
-
+---------------------------------------------------------------------------
 def seed_grow(CT_array, main_mask_data, seed, thread=80):
 
     seedList = []
@@ -394,7 +390,7 @@ def seed_grow(CT_array, main_mask_data, seed, thread=80):
                     iter_num -= 1
             except:
                 pass
-
+---------------------------------------------------------------------------
 from skimage import morphology
 def point_for_visualization(coordinates, thined_line_array, num=1):
     """
@@ -418,7 +414,7 @@ def point_for_visualization(coordinates, thined_line_array, num=1):
     res[res > 1] = 2
     return res
 
-
+---------------------------------------------------------------------------
 # -------------------------
 # 标签转为onehot
 # -------------------------
@@ -438,7 +434,7 @@ def label2onehot(mask, num_classes):
     return result_onehot
 
 
-
+--------------------------------------------------------------------------
 # 在读取该函数保存的文件时可能需要进行数据类型的转换
 def itk_keep_maximum_connect_domain(itk_label):
     cc = sitk.ConnectedComponent(itk_label)
@@ -462,7 +458,7 @@ def itk_keep_maximum_connect_domain(itk_label):
     outmasksitk.SetDirection(itk_label.GetDirection())
     return outmasksitk
 
-
+---------------------------------------------------------------------------
 #pytorch指数滑动平均
 # 使用方法参考 https://discuss.pytorch.org/t/how-to-apply-exponential-moving-average-decay-for-variables/10856/3
 class EMA():
@@ -478,6 +474,7 @@ class EMA():
         new_average = self.mu * x + (1.0 - self.mu) * self.shadow[name]
         self.shadow[name] = new_average.clone()
         return new_average
+---------------------------------------------------------------------------
 def resize_image_itk(itkimage, newSize, resamplemethod=sitk.sitkNearestNeighbor):
 
     resampler = sitk.ResampleImageFilter()
@@ -494,7 +491,7 @@ def resize_image_itk(itkimage, newSize, resamplemethod=sitk.sitkNearestNeighbor)
     resampler.SetInterpolator(resamplemethod)
     itkimgResampled = resampler.Execute(itkimage)  # //得到重新采样后的图像
     return itkimgResampled
-
+---------------------------------------------------------------------------
 # 负样本难样本挖掘
 def neg_soft_mining(self, neg_loss, tp_seg):   # 筛选出负样本中概率较大的若干个预测像素点当做难样本
     batch_size = tp_seg.shape[0]
@@ -510,7 +507,7 @@ def neg_soft_mining(self, neg_loss, tp_seg):   # 筛选出负样本中概率较�
     neg_mask = torch.zeros_like(neg_loss).scatter_(1, idxs1, 1)
 
     return neg_mask.view(tp_seg.shape)
-
+---------------------------------------------------------------------------
 def Focus_HistogramEqualization(dcm_npy, seg_npy):
     masked_dcm = dcm_npy * seg_npy
     dcm_min, dcm_max = masked_dcm.min(), masked_dcm.max()
@@ -532,9 +529,58 @@ def Focus_HistogramEqualization(dcm_npy, seg_npy):
         subpoint = focus_points[i]
         dcm_npy[subpoint[0], subpoint[1], subpoint[2]] = dcm_npy[subpoint[0], subpoint[1], subpoint[2]] * cdf[dcm_npy[subpoint[0], subpoint[1], subpoint[2]] - dcm_min]
     return dcm_npy
+---------------------------------------------------------------------------
+def rotate_3D(img, seg, degree=[-45, 45]):  
+    """  
+    围绕中心旋转  
+    """    angle_xy = random.randint(degree[0], degree[1])  
+    img = ndimage.rotate(img, angle_xy, axes=(1, 2), reshape=False, cval=0)  
+    seg = np.round(ndimage.rotate(seg, angle_xy, axes=(1, 2), reshape=False, cval=0))  
+  
+    angle_xz = random.randint(degree[0], degree[1])  
+    img = ndimage.rotate(img, angle_xz, axes=(0, 2), reshape=False, cval=0)  
+    seg = np.round(ndimage.rotate(seg, angle_xz, axes=(0, 2), reshape=False, cval=0))  
+  
+    angle_yz = random.randint(degree[0], degree[1])  
+    img = ndimage.rotate(img, angle_yz, axes=(0, 1), reshape=False, cval=0)  
+    seg = np.round(ndimage.rotate(seg, angle_yz, axes=(0, 1), reshape=False, cval=0))  
+  
+    return img, seg
 
+def appearance_aug(dicom, seg):  
+    img_size = dicom.shape  
+    points = np.argwhere(sm.skeletonize_3d(seg) > 0)  
+  	if len(points) > 0:
+		random_times = random.randint(1, 5)  
+		for _ in range(random_times):  
+			random_point = points[random.randint(0, len(points))]  
+			print(random_point)  
+			z_half_len = min(random_point[0], img_size[0] - random_point[0])  
+			y_half_len = min(random_point[1], img_size[1] - random_point[1])  
+			x_half_len = min(random_point[2], img_size[2] - random_point[2])  
 
+			dicom_patch = dicom[(random_point[0] - z_half_len):(random_point[0] + z_half_len),  
+						  (random_point[1] - y_half_len):(random_point[1] + y_half_len),  
+						  (random_point[2] - x_half_len):(random_point[2] + x_half_len)]  
 
+			seg_patch = seg[(random_point[0] - z_half_len):(random_point[0] + z_half_len),  
+						(random_point[1] - y_half_len):(random_point[1] + y_half_len),  
+						(random_point[2] - x_half_len):(random_point[2] + x_half_len)]  
+			dicom_patch_rotate, seg_patch_rotate = rotate_3D(dicom_patch, seg_patch, degree=[-60, 60])  
+
+			# 腐蚀一下，防止边界旋转带来的杂点影响  
+			seg_patch_rotate = erosion(seg_patch_rotate)  
+			dicom_rotate_res = np.zeros_like(dicom)  
+			seg_rotate_res = np.zeros_like(seg)  
+			dicom_rotate_res[(random_point[0] - z_half_len):(random_point[0] + z_half_len),  
+			(random_point[1] - y_half_len):(random_point[1] + y_half_len),  
+			(random_point[2] - x_half_len):(random_point[2] + x_half_len)] = dicom_patch_rotate  
+			seg_rotate_res[(random_point[0] - z_half_len):(random_point[0] + z_half_len),  
+			(random_point[1] - y_half_len):(random_point[1] + y_half_len),  
+			(random_point[2] - x_half_len):(random_point[2] + x_half_len)] = seg_patch_rotate  
+			intersection = seg * seg_rotate_res  
+			dicom = (1 - intersection) * dicom + intersection * dicom_rotate_res  
+    return dicom
 
 
 
@@ -548,6 +594,6 @@ if __name__ == '__main__':
     res_itk = sitk.GetImageFromArray(res)
     res_itk.CopyInformation(dcm_nii)
     sitk.WriteImage(res_itk, r"/home/zdongdong/桌面/tmp.nii.gz")
-
+	
 
 ```
