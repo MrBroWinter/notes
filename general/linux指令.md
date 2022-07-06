@@ -22,3 +22,6 @@ tar -czvf <压缩名.tar.gz> <待压缩目录>
 
 # 解压
 tar -xzvf <file.tar.gz>
+
+# 查看ubuntu版本
+cat /proc/version

@@ -9,8 +9,8 @@
         "state": {
           "type": "markdown",
           "state": {
-            "file": "general/推想专用.md",
-            "mode": "source"
+            "file": "general/vim.md",
+            "mode": "preview"
           }
         }
       }
@@ -76,7 +76,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "general/推想专用.md",
+                "file": "general/vim.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -104,7 +104,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "general/推想专用.md"
+                "file": "general/vim.md"
               }
             }
           }
@@ -116,15 +116,15 @@
   },
   "active": "2c9bf440d8ddf4d1",
   "lastOpenFiles": [
-    "general/推想专用.md",
-    "general/Loss Function.md",
-    "general/python加速（C++）.md",
-    "general/python进阶.md",
+    "general/vim.md",
     "general/utils.md",
-    "general/tmux.md",
     "general/git.md",
-    "general/数据结构算法.md",
-    "general/图卷积.md",
-    "general/vim.md"
+    "general/配置环境.md",
+    "general/推想专用.md",
+    "general/linux指令.md",
+    "general/Loss Function.md",
+    "general/tmux.md",
+    "general/python进阶.md",
+    "general/python加速（C++）.md"
   ]
 }

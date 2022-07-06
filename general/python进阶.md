@@ -214,3 +214,8 @@ print(outputs)
 
 > [1, 4, 9, 16, 25]
 
+# python 脚本
+```python
+import os
+os.system("python 要执行的python文件.py")
+```

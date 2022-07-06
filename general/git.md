@@ -1,4 +1,22 @@
 # git
+
+## 配置SSH-key
+若没有配置ssh key 泽会出现权限问题
+![[Pasted image 20220704113047.png]]
+
+所以首先得先配置ssh key
+> ssh-keygen -t rsa -C zdongdong@infervision.com  (gitlab账号)
+
+![[Pasted image 20220704113143.png]]
+
+切换到“~/.ssh”目录，会发现有以下文件
+![[Pasted image 20220704113220.png]]
+
+将"id_rsa.pub"里的秘钥复制到gitlab->setting->SSH Keys,就可以git clone 了
+![[Pasted image 20220704113553.png]]
+
+
+
 ## 将已存在的文件夹创建为新的repository
 * 全局设置
 * git config --global user.name "冬冬"
