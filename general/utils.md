@@ -584,6 +584,8 @@ def appearance_aug(dicom, seg):
 
 
 
+
+
 if __name__ == '__main__':
     dcm_path = r"/media/data/stent_0422/val_test/v2.0/test/dicom/CE021004-70336786-Cardiac-8"
     seg_path = r"/media/data/stent_0422/val_test/v2.0/test/nii/CE021004-70336786-Cardiac-8-seg.nii.gz"
@@ -595,5 +597,159 @@ if __name__ == '__main__':
     res_itk.CopyInformation(dcm_nii)
     sitk.WriteImage(res_itk, r"/home/zdongdong/桌面/tmp.nii.gz")
 	
+
+```
+
+## torch 仿射变换
+```python
+"""  
+https://blog.csdn.net/weixin_42917352/article/details/118730410   # 2D  
+https://blog.csdn.net/shenquanyue/article/details/103262512   # 3D  
+"""  
+
+"""
+alpha = 20  
+beta =20  
+gamma =20  
+rotate_Z_mtx = np.array([[np.cos(gamma), -np.sin(gamma), 0, 0],  
+                         [np.sin(gamma), np.cos(gamma),  0, 0],  
+                         [0,             0,              1, 0],  
+                         [0,             0,              0, 1]])  
+  
+rotate_Y_mtx = np.array([[np.cos(beta),  0, np.sin(beta), 0],  
+                         [0,             1, 0,            0],  
+                         [-np.sin(beta), 0, np.cos(beta), 0],  
+                         [0,             0, 0,            1]])  
+  
+rotate_X_mtx = np.array([[1, 0,             0,              0],  
+                         [0, np.cos(alpha), -np.sin(alpha), 0],  
+                         [0, np.sin(alpha), np.cos(alpha),  0],  
+                         [0, 0,             0,              1]])  
+rotate_mtx = rotate_Z_mtx @ rotate_Y_mtx @ rotate_X_mtx
+"""
+import SimpleITK as sitk  
+import numpy as np  
+import cv2  
+import torch  
+  
+  
+# 给grid增加旋转信息  
+def get_rotate_grid(img,  
+             degree=45,  
+             rotate_point=[256, 256]):  
+    rows = img.shape[0]  
+    cols = img.shape[1]  
+    grid_y = np.arange(0, rows, 1)  
+    grid_x = np.arange(0, cols, 1)  
+    grid = np.meshgrid(grid_y, grid_x)  
+    grid = [g[:, :, None] for g in grid]  
+    grid = np.concatenate(grid, axis=-1)  
+  
+    alpha = degree / 180 * np.pi  
+    rotate_mtx = np.array([[np.cos(alpha), -np.sin(alpha)], [np.sin(alpha), np.cos(alpha)]])  
+    center_point = np.array([[rotate_point]])  
+    grid -= center_point  
+    grid = np.matmul(grid, np.linalg.inv(rotate_mtx))  
+    grid += center_point  
+  
+    grid *= 2  
+    grid /= np.array([[[cols-1, rows-1]]])  
+    grid -= 1   # 缩放到[-1， 1]    grid = torch.from_numpy(grid.astype(np.float32))[None]  
+    return grid  
+   
+  
+img = cv2.imread(r"/home/zdongdong/桌面/test.jpg", 0)  
+img = cv2.resize(img, (512, 512))  
+img_res = torch.nn.functional.grid_sample(torch.from_numpy(img[None, None, ...]).float(), get_rotate_grid(img), align_corners=False)  
+img_res = img_res.squeeze().numpy().astype(np.uint8)  
+  
+########################################################################  
+rows = img.shape[0]  
+cols = img.shape[1]  
+alpha = 45 / 180 * np.pi  # 度数  
+rotate_mtx = np.array([[np.cos(alpha), -np.sin(alpha)], [np.sin(alpha), np.cos(alpha)]])  
+scale_w = 1  
+scale_h = 1  
+scale_mtx = np.array([[scale_w, 0], [0, scale_h]])  
+mtx = scale_mtx @ rotate_mtx  
+affine_mtx = np.zeros([3,3])  
+affine_mtx[:2, :2] = mtx  
+affine_mtx[2,2] = 1  
+affine_mtx = torch.from_numpy(affine_mtx).float()  
+grid_torch = torch.nn.functional.affine_grid(affine_mtx[None, :2], [1, 1, rows, cols], align_corners=True)  
+img_res_torch = torch.nn.functional.grid_sample(torch.from_numpy(img[None, None, ...]).float(), grid_torch, align_corners=False)  
+  
+img_res_torch = torch.squeeze(img_res_torch).numpy().astype(np.uint8)  
+  
+imgs = np.hstack([img, img_res, img_res_torch])  
+cv2.imshow("res image", imgs)  
+cv2.waitKey()  
+  
+
+```
+
+
+## 弹性形变
+```python
+def _affine_elastic_transform_3d(
+        self, vol, alpha=[2.0, 2.0, 2.0], smooth_num=4, win=[5, 5, 5], field_size=[17, 17, 17]
+    ):
+        batch_size = vol.size(0)
+        aff_matrix = torch.zeros([batch_size, 3, 4])
+        aff_matrix[:, 0, 0] = 1
+        aff_matrix[:, 1, 1] = 1
+        aff_matrix[:, 2, 2] = 1
+
+        grid = torch.nn.functional.affine_grid(aff_matrix, vol.size())
+
+        pad = [win[i] // 2 for i in range(3)]
+        fs = field_size
+        dz = torch.rand(1, 1, fs[0] + pad[0] * 2, fs[1] + pad[1] * 2, fs[2] + pad[2] * 2)
+        dy = torch.rand(1, 1, fs[0] + pad[0] * 2, fs[1] + pad[1] * 2, fs[2] + pad[2] * 2)
+        dx = torch.rand(1, 1, fs[0] + pad[0] * 2, fs[1] + pad[1] * 2, fs[2] + pad[2] * 2)
+        dz = (dz - 0.5) * 2.0 * alpha[0]
+        dy = (dy - 0.5) * 2.0 * alpha[1]
+        dx = (dx - 0.5) * 2.0 * alpha[2]
+
+        for _ in range(smooth_num):
+            dz = self.__smooth_3d__(dz, win)
+            dy = self.__smooth_3d__(dy, win)
+            dx = self.__smooth_3d__(dx, win)
+
+        dz = dz[:, :, pad[0] : pad[0] + fs[0], pad[1] : pad[1] + fs[1], pad[2] : pad[2] + fs[2]]
+        dy = dy[:, :, pad[0] : pad[0] + fs[0], pad[1] : pad[1] + fs[1], pad[2] : pad[2] + fs[2]]
+        dx = dx[:, :, pad[0] : pad[0] + fs[0], pad[1] : pad[1] + fs[1], pad[2] : pad[2] + fs[2]]
+
+        size_3d = [vol.size(2), vol.size(3), vol.size(4)]
+        dz = torch.nn.functional.interpolate(dz, size=size_3d, mode="trilinear", align_corners=False).repeat(
+            batch_size, 1, 1, 1, 1
+        )
+        dy = torch.nn.functional.interpolate(dy, size=size_3d, mode="trilinear", align_corners=False).repeat(
+            batch_size, 1, 1, 1, 1
+        )
+        dx = torch.nn.functional.interpolate(dx, size=size_3d, mode="trilinear", align_corners=False).repeat(
+            batch_size, 1, 1, 1, 1
+        )
+
+        grid[:, :, :, :, 0] += dz[:, 0, :, :, :]
+        grid[:, :, :, :, 1] += dy[:, 0, :, :, :]
+        grid[:, :, :, :, 2] += dx[:, 0, :, :, :]
+
+        vol_o = torch.nn.functional.grid_sample(vol, grid, mode="bilinear")
+
+        return vol_o
+
+    def __smooth_3d__(self, vol, win):
+        kernel = torch.ones([1, vol.size(1), win[0], win[1], win[2]])
+        pad_size = [
+            (int)((win[2] - 1) / 2),
+            (int)((win[2] - 1) / 2),
+            (int)((win[1] - 1) / 2),
+            (int)((win[1] - 1) / 2),
+            (int)((win[0] - 1) / 2),
+            (int)((win[0] - 1) / 2),
+        ]
+        vol = torch.nn.functional.pad(vol, pad_size, "replicate")
+        vol_s = torch.nn.functional.conv3d(vol, kernel, stride=(1, 1, 1)) / torch.sum(kernel)
 
 ```

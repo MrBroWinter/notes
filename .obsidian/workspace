@@ -9,7 +9,7 @@
         "state": {
           "type": "markdown",
           "state": {
-            "file": "general/vim.md",
+            "file": "general/utils.md",
             "mode": "preview"
           }
         }
@@ -76,7 +76,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "general/vim.md",
+                "file": "general/utils.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -104,7 +104,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "general/vim.md"
+                "file": "general/utils.md"
               }
             }
           }
@@ -116,9 +116,9 @@
   },
   "active": "2c9bf440d8ddf4d1",
   "lastOpenFiles": [
-    "general/vim.md",
     "general/utils.md",
     "general/git.md",
+    "general/vim.md",
     "general/配置环境.md",
     "general/推想专用.md",
     "general/linux指令.md",
