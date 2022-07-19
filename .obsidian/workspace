@@ -10,7 +10,8 @@
           "type": "markdown",
           "state": {
             "file": "general/推想专用.md",
-            "mode": "preview"
+            "mode": "preview",
+            "source": true
           }
         }
       }
@@ -119,12 +120,12 @@
     "general/推想专用.md",
     "general/git.md",
     "general/utils.md",
+    "general/tmux.md",
+    "general/图卷积.md",
     "general/vim.md",
     "general/配置环境.md",
     "general/linux指令.md",
     "general/Loss Function.md",
-    "general/tmux.md",
-    "general/python进阶.md",
-    "general/python加速（C++）.md"
+    "general/python进阶.md"
   ]
 }
