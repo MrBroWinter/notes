@@ -117,15 +117,15 @@
   },
   "active": "2c9bf440d8ddf4d1",
   "lastOpenFiles": [
-    "general/推想专用.md",
-    "general/git.md",
     "general/utils.md",
+    "general/推想专用.md",
+    "general/python进阶.md",
+    "general/git.md",
     "general/tmux.md",
     "general/图卷积.md",
     "general/vim.md",
     "general/配置环境.md",
     "general/linux指令.md",
-    "general/Loss Function.md",
-    "general/python进阶.md"
+    "general/Loss Function.md"
   ]
 }
