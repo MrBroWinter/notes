@@ -9,8 +9,8 @@
         "state": {
           "type": "markdown",
           "state": {
-            "file": "general/配置环境.md",
-            "mode": "source",
+            "file": "general/推想专用.md",
+            "mode": "preview",
             "source": true
           }
         }
@@ -77,7 +77,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "general/配置环境.md",
+                "file": "general/推想专用.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -105,7 +105,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "general/配置环境.md"
+                "file": "general/推想专用.md"
               }
             }
           }
@@ -117,10 +117,10 @@
   },
   "active": "2c9bf440d8ddf4d1",
   "lastOpenFiles": [
+    "general/配置环境.md",
     "general/git.md",
     "general/linux指令.md",
     "general/vim.md",
-    "general/配置环境.md",
     "general/推想专用.md",
     "general/utils.md",
     "00 inbox/demo1.md",
