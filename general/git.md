@@ -73,3 +73,18 @@ git remote set-url origin ssh://git@code.infervision.com:2022/algorithm/alchemy/
 git tag -d <tag名>
 
 git push origin :refs/tags/<tag名>
+
+
+## 合并分支
+如果是要将dev1的分支merge到master分支
+1. checkout到master分支
+2. git merge dev1
+3. git push origin master
+这样就将dev1分支上合并到master上了，如果有需要可以删除dev1分支
+
+## 删除分支
+1. 删除本地分支 git branch -D dev1   (不能处在dev1分支删除该分支，应先切换到其他分支)
+2. 删除远端分支 git push origin -d dev1 
+
+## 拉取当前分支
+git pull

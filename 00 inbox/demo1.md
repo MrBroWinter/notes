@@ -96,3 +96,6 @@ print(reduce(lambda x,y: x+y, map(lambda d: math.sqrt(d), filter(lambda p : 0 no
 
 
 ## 高阶语法
+
+
+
