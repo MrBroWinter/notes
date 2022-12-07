@@ -103,7 +103,7 @@ class FocalLoss(nn.Module):
         else:  
             return F_loss  
   
-  
+
 if __name__ == "__main__":  
     y_true = t.randn((5, 1, 55, 55))  
     y_pred = t.randn((5, 1, 55, 55))  

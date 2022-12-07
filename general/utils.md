@@ -751,5 +751,12 @@ def _affine_elastic_transform_3d(
         ]
         vol = torch.nn.functional.pad(vol, pad_size, "replicate")
         vol_s = torch.nn.functional.conv3d(vol, kernel, stride=(1, 1, 1)) / torch.sum(kernel)
+        return vol_s
 
+```
+
+# 自定义膨胀腐蚀
+```python
+from skimage.morphology import binary_dilation
+res_arr = binary_dilation(arr, np.ones([3,6,6], bool))
 ```

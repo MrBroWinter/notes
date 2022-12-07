@@ -4,16 +4,22 @@
     "type": "split",
     "children": [
       {
-        "id": "2c9bf440d8ddf4d1",
-        "type": "leaf",
-        "state": {
-          "type": "markdown",
-          "state": {
-            "file": "general/utils.md",
-            "mode": "preview",
-            "source": true
+        "id": "783f2453c6d88e3e",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "2c9bf440d8ddf4d1",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "general/utils.md",
+                "mode": "source",
+                "source": true
+              }
+            }
           }
-        }
+        ]
       }
     ],
     "direction": "vertical"
@@ -31,7 +37,9 @@
             "type": "leaf",
             "state": {
               "type": "file-explorer",
-              "state": {}
+              "state": {
+                "sortOrder": "alphabetical"
+              }
             }
           },
           {
@@ -61,7 +69,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 329
+    "width": 200
   },
   "right": {
     "id": "75b559de62990952",
@@ -113,19 +121,19 @@
       }
     ],
     "direction": "horizontal",
-    "width": 300
+    "width": 200
   },
   "active": "2c9bf440d8ddf4d1",
   "lastOpenFiles": [
-    "general/推想专用.md",
-    "general/配置环境.md",
     "general/git.md",
     "general/linux指令.md",
-    "general/vim.md",
+    "general/推想专用.md",
     "general/utils.md",
+    "general/Loss Function.md",
+    "general/配置环境.md",
+    "general/vim.md",
     "00 inbox/demo1.md",
     "general/目标检测.md",
-    "general/python进阶.md",
-    "general/tmux.md"
+    "general/python进阶.md"
   ]
 }
