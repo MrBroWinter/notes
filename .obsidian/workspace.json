@@ -13,7 +13,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "general/utils.md",
+                "file": "general/Loss Function.md",
                 "mode": "source",
                 "source": true
               }
@@ -85,7 +85,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "general/utils.md",
+                "file": "general/Loss Function.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -113,7 +113,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "general/utils.md"
+                "file": "general/Loss Function.md"
               }
             }
           }
@@ -125,10 +125,10 @@
   },
   "active": "2c9bf440d8ddf4d1",
   "lastOpenFiles": [
+    "general/utils.md",
     "general/git.md",
     "general/linux指令.md",
     "general/推想专用.md",
-    "general/utils.md",
     "general/Loss Function.md",
     "general/配置环境.md",
     "general/vim.md",

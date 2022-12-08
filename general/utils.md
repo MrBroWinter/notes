@@ -691,67 +691,81 @@ cv2.waitKey()
 
 ## 弹性形变
 ```python
-def _affine_elastic_transform_3d(
-        self, vol, alpha=[2.0, 2.0, 2.0], smooth_num=4, win=[5, 5, 5], field_size=[17, 17, 17]
-    ):
-        batch_size = vol.size(0)
-        aff_matrix = torch.zeros([batch_size, 3, 4])
-        aff_matrix[:, 0, 0] = 1
-        aff_matrix[:, 1, 1] = 1
-        aff_matrix[:, 2, 2] = 1
-
-        grid = torch.nn.functional.affine_grid(aff_matrix, vol.size())
-
-        pad = [win[i] // 2 for i in range(3)]
-        fs = field_size
-        dz = torch.rand(1, 1, fs[0] + pad[0] * 2, fs[1] + pad[1] * 2, fs[2] + pad[2] * 2)
-        dy = torch.rand(1, 1, fs[0] + pad[0] * 2, fs[1] + pad[1] * 2, fs[2] + pad[2] * 2)
-        dx = torch.rand(1, 1, fs[0] + pad[0] * 2, fs[1] + pad[1] * 2, fs[2] + pad[2] * 2)
-        dz = (dz - 0.5) * 2.0 * alpha[0]
-        dy = (dy - 0.5) * 2.0 * alpha[1]
-        dx = (dx - 0.5) * 2.0 * alpha[2]
-
-        for _ in range(smooth_num):
-            dz = self.__smooth_3d__(dz, win)
-            dy = self.__smooth_3d__(dy, win)
-            dx = self.__smooth_3d__(dx, win)
-
-        dz = dz[:, :, pad[0] : pad[0] + fs[0], pad[1] : pad[1] + fs[1], pad[2] : pad[2] + fs[2]]
-        dy = dy[:, :, pad[0] : pad[0] + fs[0], pad[1] : pad[1] + fs[1], pad[2] : pad[2] + fs[2]]
-        dx = dx[:, :, pad[0] : pad[0] + fs[0], pad[1] : pad[1] + fs[1], pad[2] : pad[2] + fs[2]]
-
-        size_3d = [vol.size(2), vol.size(3), vol.size(4)]
-        dz = torch.nn.functional.interpolate(dz, size=size_3d, mode="trilinear", align_corners=False).repeat(
-            batch_size, 1, 1, 1, 1
-        )
-        dy = torch.nn.functional.interpolate(dy, size=size_3d, mode="trilinear", align_corners=False).repeat(
-            batch_size, 1, 1, 1, 1
-        )
-        dx = torch.nn.functional.interpolate(dx, size=size_3d, mode="trilinear", align_corners=False).repeat(
-            batch_size, 1, 1, 1, 1
-        )
-
-        grid[:, :, :, :, 0] += dz[:, 0, :, :, :]
-        grid[:, :, :, :, 1] += dy[:, 0, :, :, :]
-        grid[:, :, :, :, 2] += dx[:, 0, :, :, :]
-
-        vol_o = torch.nn.functional.grid_sample(vol, grid, mode="bilinear")
-
-        return vol_o
-
-    def __smooth_3d__(self, vol, win):
-        kernel = torch.ones([1, vol.size(1), win[0], win[1], win[2]])
-        pad_size = [
-            (int)((win[2] - 1) / 2),
-            (int)((win[2] - 1) / 2),
-            (int)((win[1] - 1) / 2),
-            (int)((win[1] - 1) / 2),
-            (int)((win[0] - 1) / 2),
-            (int)((win[0] - 1) / 2),
-        ]
-        vol = torch.nn.functional.pad(vol, pad_size, "replicate")
-        vol_s = torch.nn.functional.conv3d(vol, kernel, stride=(1, 1, 1)) / torch.sum(kernel)
-        return vol_s
+import torch  
+import numpy as np  
+import SimpleITK as sitk  
+  
+def _affine_elastic_transform_3d(vol, seg, alpha=[2.0, 2.0, 2.0], smooth_num=4, win=[5, 5, 5], field_size=[17, 17, 17]):  
+    batch_size = vol.size(0)  
+    aff_matrix = torch.zeros([batch_size, 3, 4])  
+    aff_matrix[:, 0, 0] = 1  
+    aff_matrix[:, 1, 1] = 1  
+    aff_matrix[:, 2, 2] = 1  
+  
+    grid = torch.nn.functional.affine_grid(aff_matrix, vol.size())  
+  
+    pad = [win[i] // 2 for i in range(3)]  
+    fs = field_size  
+    dz = torch.rand(1, 1, fs[0] + pad[0] * 2, fs[1] + pad[1] * 2, fs[2] + pad[2] * 2)  
+    dy = torch.rand(1, 1, fs[0] + pad[0] * 2, fs[1] + pad[1] * 2, fs[2] + pad[2] * 2)  
+    dx = torch.rand(1, 1, fs[0] + pad[0] * 2, fs[1] + pad[1] * 2, fs[2] + pad[2] * 2)  
+    dz = (dz - 0.5) * 2.0 * alpha[0]  
+    dy = (dy - 0.5) * 2.0 * alpha[1]  
+    dx = (dx - 0.5) * 2.0 * alpha[2]  
+  
+    for _ in range(smooth_num):  
+        dz = __smooth_3d__(dz, win)  
+        dy = __smooth_3d__(dy, win)  
+        dx = __smooth_3d__(dx, win)  
+  
+    dz = dz[:, :, pad[0]: pad[0] + fs[0], pad[1]: pad[1] + fs[1], pad[2]: pad[2] + fs[2]]  
+    dy = dy[:, :, pad[0]: pad[0] + fs[0], pad[1]: pad[1] + fs[1], pad[2]: pad[2] + fs[2]]  
+    dx = dx[:, :, pad[0]: pad[0] + fs[0], pad[1]: pad[1] + fs[1], pad[2]: pad[2] + fs[2]]  
+  
+    size_3d = [vol.size(2), vol.size(3), vol.size(4)]  
+    dz = torch.nn.functional.interpolate(dz, size=size_3d, mode="trilinear", align_corners=False).repeat(  
+        batch_size, 1, 1, 1, 1  
+    )  
+    dy = torch.nn.functional.interpolate(dy, size=size_3d, mode="trilinear", align_corners=False).repeat(  
+        batch_size, 1, 1, 1, 1  
+    )  
+    dx = torch.nn.functional.interpolate(dx, size=size_3d, mode="trilinear", align_corners=False).repeat(  
+        batch_size, 1, 1, 1, 1  
+    )  
+  
+    grid[:, :, :, :, 0] += dz[:, 0, :, :, :]  
+    grid[:, :, :, :, 1] += dy[:, 0, :, :, :]  
+    grid[:, :, :, :, 2] += dx[:, 0, :, :, :]  
+  
+    vol_o = torch.nn.functional.grid_sample(vol, grid, mode="bilinear")  
+    seg_o = torch.nn.functional.grid_sample(seg, grid, mode="nearest")  
+    return vol_o, seg_o  
+  
+  
+def __smooth_3d__(vol, win):  
+    kernel = torch.ones([1, vol.size(1), win[0], win[1], win[2]])  
+    pad_size = [  
+        (int)((win[2] - 1) / 2),  
+        (int)((win[2] - 1) / 2),  
+        (int)((win[1] - 1) / 2),  
+        (int)((win[1] - 1) / 2),  
+        (int)((win[0] - 1) / 2),  
+        (int)((win[0] - 1) / 2),  
+    ]  
+    vol = torch.nn.functional.pad(vol, pad_size, "replicate")  
+    vol_s = torch.nn.functional.conv3d(vol, kernel, stride=(1, 1, 1)) / torch.sum(kernel)  
+    return vol_s  
+  
+img_itk = sitk.ReadImage(r"/media/zdongdong/Data/胸腔积液/nii/CE027001-1217020050-30904-4.nii.gz")  
+img = sitk.GetArrayFromImage(img_itk)  
+seg = sitk.GetArrayFromImage(sitk.ReadImage(r"/media/zdongdong/Data/胸腔积液/seg/CE027001-1217020050-30904-4-seg.nii.gz"))  
+img_res, seg_res = _affine_elastic_transform_3d(torch.FloatTensor(img[None, None]), torch.FloatTensor(seg[None, None]))  
+img_res_itk = sitk.GetImageFromArray(img_res.cpu().numpy()[0,0])  
+seg_res_itk = sitk.GetImageFromArray(seg_res.cpu().numpy()[0,0])  
+img_res_itk.CopyInformation(img_itk)  
+seg_res_itk.CopyInformation(img_itk)  
+sitk.WriteImage(img_res_itk, r"/media/zdongdong/Data/tmp.nii.gz")  
+sitk.WriteImage(seg_res_itk, r"/media/zdongdong/Data/tmp-seg.nii.gz")
 
 ```
 
