@@ -13,7 +13,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "general/Loss Function.md",
+                "file": "general/推想专用.md",
                 "mode": "source",
                 "source": true
               }
@@ -85,7 +85,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "general/Loss Function.md",
+                "file": "general/推想专用.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -113,7 +113,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "general/Loss Function.md"
+                "file": "general/推想专用.md"
               }
             }
           }
@@ -123,15 +123,27 @@
     "direction": "horizontal",
     "width": 200
   },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:打开快速切换": false,
+      "graph:查看关系图谱": false,
+      "canvas:Create new canvas": false,
+      "daily-notes:打开/创建今天的日记": false,
+      "command-palette:打开命令面板": false,
+      "markdown-importer:打开 Markdown 格式转换器": false,
+      "audio-recorder:开始/结束录音": false,
+      "workspaces:管理工作区布局": false
+    }
+  },
   "active": "2c9bf440d8ddf4d1",
   "lastOpenFiles": [
-    "general/utils.md",
-    "general/git.md",
-    "general/linux指令.md",
+    "general/vim.md",
     "general/推想专用.md",
+    "general/utils.md",
     "general/Loss Function.md",
     "general/配置环境.md",
-    "general/vim.md",
+    "general/linux指令.md",
+    "general/git.md",
     "00 inbox/demo1.md",
     "general/目标检测.md",
     "general/python进阶.md"
