@@ -321,32 +321,28 @@ def remove_small_volume(mask, threshold=800):
     return res
 ---------------------------------------------------------------------------
 import itertools
-def detect_endpoint(center_line):
-    """
-    :param center_line: 骨架提取后的中心线
-    :return:
-        endpoint:三维矩阵形式的坐标显示
-        coordinates：坐标点
-        num_endpoint：端点个数
-    """
-    end_point = np.zeros_like(center_line)
-    z_shape, y_shape, x_shape = np.shape(end_point)
-    items = list(itertools.product([-1, 0, 1], [-1, 0, 1], [-1, 0, 1]))
-    coordinates = []
-    num_endpoint = 0
-    for i in range(1, x_shape - 1):
-        for j in range(1, y_shape - 1):
-            for k in range(1, z_shape - 1):
-                # 当前中心点为1时，则计算其所有领域和自身点的和，若和为2，则说明是端点
-                if center_line[k, j, i] == 1:
-                    sum = 0
-                    for item in items:
-                        sum += center_line[k + item[0]][j + item[1]][i + item[2]]
-                    if sum == 2:   # 说明为端点
-                        end_point[k][j][i] = 1
-                        coordinates.append([k, j, i])
-                        num_endpoint += 1
-
+def detect_endpoint(center_line):  
+    """  
+    :param center_line: 骨架提取后的中心线  
+    :return:        endpoint:三维矩阵形式的坐标显示  
+        coordinates：坐标点  
+        num_endpoint：端点个数  
+    """    points_index = np.argwhere(center_line)  
+    end_point = np.zeros_like(center_line)  
+    items = list(itertools.product([-1, 0, 1], [-1, 0, 1], [-1, 0, 1]))  
+    coordinates = []  
+    num_endpoint = 0  
+    for point in points_index:  
+        # 当前中心点为1时，则计算其所有领域和自身点的和，若和为2，则说明是端点  
+        if center_line[point[0], point[1], point[2]] == 1:  
+            sum = 0  
+            for item in items:  
+                sum += center_line[point[0] + item[0]][point[1] + item[1]][point[2] + item[2]]  
+            if sum == 2:   # 说明为端点  
+                end_point[point[0]][point[1]][point[2]] = 1  
+                coordinates.append(point)  
+                num_endpoint += 1  
+  
     return end_point, coordinates, num_endpoint
 ---------------------------------------------------------------------------
 def seed_grow(CT_array, main_mask_data, seed, thread=80):
@@ -606,86 +602,79 @@ if __name__ == '__main__':
 https://blog.csdn.net/weixin_42917352/article/details/118730410   # 2D  
 https://blog.csdn.net/shenquanyue/article/details/103262512   # 3D  
 """  
+import torch
+import numpy as np
+import SimpleITK as sitk
 
-"""
-alpha = 20  
-beta =20  
-gamma =20  
-rotate_Z_mtx = np.array([[np.cos(gamma), -np.sin(gamma), 0, 0],  
-                         [np.sin(gamma), np.cos(gamma),  0, 0],  
-                         [0,             0,              1, 0],  
-                         [0,             0,              0, 1]])  
-  
-rotate_Y_mtx = np.array([[np.cos(beta),  0, np.sin(beta), 0],  
-                         [0,             1, 0,            0],  
-                         [-np.sin(beta), 0, np.cos(beta), 0],  
-                         [0,             0, 0,            1]])  
-  
-rotate_X_mtx = np.array([[1, 0,             0,              0],  
-                         [0, np.cos(alpha), -np.sin(alpha), 0],  
-                         [0, np.sin(alpha), np.cos(alpha),  0],  
-                         [0, 0,             0,              1]])  
-rotate_mtx = rotate_Z_mtx @ rotate_Y_mtx @ rotate_X_mtx
-"""
-import SimpleITK as sitk  
-import numpy as np  
-import cv2  
-import torch  
-  
-  
-# 给grid增加旋转信息  
-def get_rotate_grid(img,  
-             degree=45,  
-             rotate_point=[256, 256]):  
-    rows = img.shape[0]  
-    cols = img.shape[1]  
-    grid_y = np.arange(0, rows, 1)  
-    grid_x = np.arange(0, cols, 1)  
-    grid = np.meshgrid(grid_y, grid_x)  
-    grid = [g[:, :, None] for g in grid]  
-    grid = np.concatenate(grid, axis=-1)  
-  
-    alpha = degree / 180 * np.pi  
-    rotate_mtx = np.array([[np.cos(alpha), -np.sin(alpha)], [np.sin(alpha), np.cos(alpha)]])  
-    center_point = np.array([[rotate_point]])  
-    grid -= center_point  
-    grid = np.matmul(grid, np.linalg.inv(rotate_mtx))  
-    grid += center_point  
-  
-    grid *= 2  
-    grid /= np.array([[[cols-1, rows-1]]])  
-    grid -= 1   # 缩放到[-1， 1]    grid = torch.from_numpy(grid.astype(np.float32))[None]  
-    return grid  
-   
-  
-img = cv2.imread(r"/home/zdongdong/桌面/test.jpg", 0)  
-img = cv2.resize(img, (512, 512))  
-img_res = torch.nn.functional.grid_sample(torch.from_numpy(img[None, None, ...]).float(), get_rotate_grid(img), align_corners=False)  
-img_res = img_res.squeeze().numpy().astype(np.uint8)  
-  
-########################################################################  
-rows = img.shape[0]  
-cols = img.shape[1]  
-alpha = 45 / 180 * np.pi  # 度数  
-rotate_mtx = np.array([[np.cos(alpha), -np.sin(alpha)], [np.sin(alpha), np.cos(alpha)]])  
-scale_w = 1  
-scale_h = 1  
-scale_mtx = np.array([[scale_w, 0], [0, scale_h]])  
-mtx = scale_mtx @ rotate_mtx  
-affine_mtx = np.zeros([3,3])  
-affine_mtx[:2, :2] = mtx  
-affine_mtx[2,2] = 1  
-affine_mtx = torch.from_numpy(affine_mtx).float()  
-grid_torch = torch.nn.functional.affine_grid(affine_mtx[None, :2], [1, 1, rows, cols], align_corners=True)  
-img_res_torch = torch.nn.functional.grid_sample(torch.from_numpy(img[None, None, ...]).float(), grid_torch, align_corners=False)  
-  
-img_res_torch = torch.squeeze(img_res_torch).numpy().astype(np.uint8)  
-  
-imgs = np.hstack([img, img_res, img_res_torch])  
-cv2.imshow("res image", imgs)  
-cv2.waitKey()  
-  
 
+def _get_rotate_mat(z_angle, y_angle, x_angle):
+    def _create_matrix_rotation_z_3d(angle, matrix=None):
+        rotation_x = np.array(
+            [
+                [1, 0, 0],
+                [0, np.cos(angle), -np.sin(angle)],
+                [0, np.sin(angle), np.cos(angle)],
+            ]
+        )
+        if matrix is None:
+            return rotation_x
+        return np.dot(matrix, rotation_x)
+
+    def _create_matrix_rotation_y_3d(angle, matrix=None):
+        rotation_y = np.array(
+            [
+                [np.cos(angle), 0, np.sin(angle)],
+                [0, 1, 0],
+                [-np.sin(angle), 0, np.cos(angle)],
+            ]
+        )
+        if matrix is None:
+            return rotation_y
+
+        return np.dot(matrix, rotation_y)
+
+    def _create_matrix_rotation_x_3d(angle, matrix=None):
+        rotation_z = np.array(
+            [
+                [np.cos(angle), -np.sin(angle), 0],
+                [np.sin(angle), np.cos(angle), 0],
+                [0, 0, 1],
+            ]
+        )
+        if matrix is None:
+            return rotation_z
+
+        return np.dot(matrix, rotation_z)
+
+    rot_matrix = np.identity(3)
+    rot_matrix = _create_matrix_rotation_z_3d(z_angle, rot_matrix)
+    rot_matrix = _create_matrix_rotation_y_3d(y_angle, rot_matrix)
+    rot_matrix = _create_matrix_rotation_x_3d(x_angle, rot_matrix)
+    return rot_matrix
+def _affine_elastic_transform_3d(vol, seg, alpha=[2.0, 2.0, 2.0], smooth_num=4, win=[5, 5, 5], field_size=[17, 17, 17]):
+    batch_size = vol.size(0)
+    aff_matrix = torch.zeros([batch_size, 3, 4])
+
+    rot_matrix = _get_rotate_mat(20, 20, 20)
+    aff_matrix[:, :3, :3] = torch.from_numpy(rot_matrix)
+    grid = torch.nn.functional.affine_grid(aff_matrix, vol.size())
+
+    vol_o = torch.nn.functional.grid_sample(vol, grid, mode="bilinear")
+    seg_o = torch.nn.functional.grid_sample(seg, grid, mode="nearest")
+
+    return vol_o, seg_o
+
+
+img_itk = sitk.ReadImage(r"/media/zdongdong/Data/胸腔积液/nii/CE027001-1217020050-30904-4.nii.gz")
+img = sitk.GetArrayFromImage(img_itk)
+seg = sitk.GetArrayFromImage(sitk.ReadImage(r"/media/zdongdong/Data/胸腔积液/seg/CE027001-1217020050-30904-4-seg.nii.gz"))
+img_res, seg_res = _affine_elastic_transform_3d(torch.FloatTensor(img[None, None]), torch.FloatTensor(seg[None, None]))
+img_res_itk = sitk.GetImageFromArray(img_res.cpu().numpy()[0, 0])
+seg_res_itk = sitk.GetImageFromArray(seg_res.cpu().numpy()[0, 0])
+img_res_itk.CopyInformation(img_itk)
+seg_res_itk.CopyInformation(img_itk)
+sitk.WriteImage(img_res_itk, r"/media/zdongdong/Data/tmp.nii.gz")
+sitk.WriteImage(seg_res_itk, r"/media/zdongdong/Data/tmp-seg.nii.gz")
 ```
 
 
@@ -773,4 +762,29 @@ sitk.WriteImage(seg_res_itk, r"/media/zdongdong/Data/tmp-seg.nii.gz")
 ```python
 from skimage.morphology import binary_dilation
 res_arr = binary_dilation(arr, np.ones([3,6,6], bool))
+```
+
+# 2D deformation
+
+```python
+def elastic_transform(image, image2, image3, alpha, sigma):
+	random_state = np.random.RandomState(None)
+
+	h, w = image.shape
+
+	dx = gaussian_filter((random_state.rand(*image.shape) * 2 - 1), sigma, mode="constant", cval=0) * alpha
+
+	dy = gaussian_filter((random_state.rand(*image.shape) * 2 - 1), sigma, mode="constant", cval=0) * alpha
+
+	x, y = np.meshgrid(np.arange(w), np.arange(h))
+
+	indices = np.reshape(y+dy, (-1, 1)), np.reshape(x+dx, (-1, 1))
+
+	distored_image = map_coordinates(image, indices, order=1, mode='reflect')
+
+	distored_image2 = map_coordinates(image2, indices, order=1, mode='reflect')
+
+	distored_image3 = map_coordinates(image3, indices, order=1, mode='reflect')
+
+	return distored_image.reshape(image.shape), distored_image2.reshape(image.shape), distored_image3.reshape(image.shape)
 ```

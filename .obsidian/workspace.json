@@ -13,9 +13,33 @@
             "state": {
               "type": "markdown",
               "state": {
+                "file": "general/utils.md",
+                "mode": "preview",
+                "source": true
+              }
+            }
+          },
+          {
+            "id": "64cb76b79b45b74f",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "general/推想专用.md",
+                "mode": "preview",
+                "source": false
+              }
+            }
+          },
+          {
+            "id": "930ab0f2f0096c06",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
                 "file": "general/Loss Function.md",
                 "mode": "source",
-                "source": true
+                "source": false
               }
             }
           }
@@ -85,7 +109,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "general/Loss Function.md",
+                "file": "general/utils.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -113,7 +137,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "general/Loss Function.md"
+                "file": "general/utils.md"
               }
             }
           }
@@ -126,9 +150,9 @@
   },
   "left-ribbon": {
     "hiddenItems": {
+      "canvas:新建白板": false,
       "switcher:打开快速切换": false,
       "graph:查看关系图谱": false,
-      "canvas:Create new canvas": false,
       "daily-notes:打开/创建今天的日记": false,
       "command-palette:打开命令面板": false,
       "markdown-importer:打开 Markdown 格式转换器": false,
@@ -138,15 +162,18 @@
   },
   "active": "2c9bf440d8ddf4d1",
   "lastOpenFiles": [
-    "general/utils.md",
-    "general/tmux.md",
-    "general/配置环境.md",
     "general/推想专用.md",
+    "general/配置环境.md",
+    "general/数据结构算法.md",
+    "general/utils.md",
+    "general/python加速（C++）.md",
     "general/Loss Function.md",
-    "general/git.md",
-    "general/linux指令.md",
-    "general/vim.md",
     "00 inbox/demo1.md",
-    "general/目标检测.md"
+    "general/目标检测.md",
+    "general/git.md",
+    "general/python进阶.md",
+    "general/tmux.md",
+    "general/linux指令.md",
+    "general/vim.md"
   ]
 }
