@@ -651,7 +651,7 @@ def _get_rotate_mat(z_angle, y_angle, x_angle):
     rot_matrix = _create_matrix_rotation_y_3d(y_angle, rot_matrix)
     rot_matrix = _create_matrix_rotation_x_3d(x_angle, rot_matrix)
     return rot_matrix
-def _affine_elastic_transform_3d(vol, seg, alpha=[2.0, 2.0, 2.0], smooth_num=4, win=[5, 5, 5], field_size=[17, 17, 17]):
+def rotate_3d(vol, seg, alpha=[2.0, 2.0, 2.0], smooth_num=4, win=[5, 5, 5], field_size=[17, 17, 17]):
     batch_size = vol.size(0)
     aff_matrix = torch.zeros([batch_size, 3, 4])
 
@@ -668,7 +668,7 @@ def _affine_elastic_transform_3d(vol, seg, alpha=[2.0, 2.0, 2.0], smooth_num=4, 
 img_itk = sitk.ReadImage(r"/media/zdongdong/Data/胸腔积液/nii/CE027001-1217020050-30904-4.nii.gz")
 img = sitk.GetArrayFromImage(img_itk)
 seg = sitk.GetArrayFromImage(sitk.ReadImage(r"/media/zdongdong/Data/胸腔积液/seg/CE027001-1217020050-30904-4-seg.nii.gz"))
-img_res, seg_res = _affine_elastic_transform_3d(torch.FloatTensor(img[None, None]), torch.FloatTensor(seg[None, None]))
+img_res, seg_res = rotate_3d(torch.FloatTensor(img[None, None]), torch.FloatTensor(seg[None, None]))
 img_res_itk = sitk.GetImageFromArray(img_res.cpu().numpy()[0, 0])
 seg_res_itk = sitk.GetImageFromArray(seg_res.cpu().numpy()[0, 0])
 img_res_itk.CopyInformation(img_itk)
