@@ -82,41 +82,49 @@ class FocalTverskyLoss(nn.Module):
         return t.pow((1 - pt_1), self.gamma)  
   
   
-class FocalLoss(nn.Module):
+def sigmoid_focal_loss(
+    inputs: torch.Tensor,
+    targets: torch.Tensor,
+    alpha: float = -1,
+    gamma: float = 2,
+    reduction: str = "none",
+) -> torch.Tensor:
+    """
+    Loss used in RetinaNet for dense detection: https://arxiv.org/abs/1708.02002.
+    Args:
+        inputs: A float tensor of arbitrary shape.
+                The predictions for each example.
+        targets: A float tensor with the same shape as inputs. Stores the binary
+                 classification label for each element in inputs
+                (0 for the negative class and 1 for the positive class).
+        alpha: (optional) Weighting factor in range (0,1) to balance
+                positive vs negative examples. Default = -1 (no weighting).
+        gamma: Exponent of the modulating factor (1 - p_t) to
+               balance easy vs hard examples.
+        reduction: 'none' | 'mean' | 'sum'
+                 'none': No reduction will be applied to the output.
+                 'mean': The output will be averaged.
+                 'sum': The output will be summed.
+    Returns:
+        Loss tensor with the reduction option applied.
+    """
+    inputs = inputs.float()
+    targets = targets.float()
+    p = torch.sigmoid(inputs)
+    ce_loss = F.binary_cross_entropy_with_logits(inputs, targets, reduction="none")
+    p_t = p * targets + (1 - p) * (1 - targets)
+    loss = ce_loss * ((1 - p_t) ** gamma)
 
-    def __init__(self, alpha=0.25, gamma=2, logits=False, reduce=True):
+    if alpha >= 0:
+        alpha_t = alpha * targets + (1 - alpha) * (1 - targets)
+        loss = alpha_t * loss
 
-        super(FocalLoss, self).__init__()
+    if reduction == "mean":
+        loss = loss.mean()
+    elif reduction == "sum":
+        loss = loss.sum()
 
-		self.alpha = alpha
-
-		self.gamma = gamma
-
-		self.logits = logits
-
-		self.reduce = reduce
-
-	def forward(self, inputs, targets):
-
-		if self.logits:
-
-			BCE_loss = F.binary_cross_entropy_with_logits(inputs, targets, reduce=False)
-
-		else:
-
-			BCE_loss = F.binary_cross_entropy(inputs, targets, reduce=False)
-		
-		pt = torch.exp(-BCE_loss)
-
-		F_loss = self.alpha * (1 - pt) ** self.gamma * BCE_loss * (targets == 1) + (1 - self.alpha) * (1 - pt) ** self.gamma * BCE_loss * (targets == 0)
-
-		if self.reduce:
-
-			return torch.mean(F_loss)
-
-		else:
-
-			return F_loss
+    return loss
   
 
 if __name__ == "__main__":  

@@ -77,7 +77,7 @@ N = 100
 print(reduce(lambda x,y: x+y, map(lambda d: math.sqrt(d), filter(lambda p : 0 not in list(map(lambda q: p % q, range(2, int(math.sqrt(p) + 1)))), range(1, 100)))))
 ```
 ## 任务列表
-- [x] 入门  <!-- 快捷键Ctrl + Enter-->
+- [ ] 入门  <!-- 快捷键Ctrl + Enter-->
 - [ ] 进阶
 
 ## 表格

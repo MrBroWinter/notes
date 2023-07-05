@@ -25,21 +25,21 @@ def visualization_CT(ct, mask, img_save_path):
 # -------------------------
 def get_boundaries_from_mask(mask):
 
-    mask_voxel_coords = np.where(mask != 0)
-    zmin = int(np.min(mask_voxel_coords[0]))
-    zmax = int(np.max(mask_voxel_coords[0])) + 1
-    ymin = int(np.min(mask_voxel_coords[1]))
-    ymax = int(np.max(mask_voxel_coords[1])) + 1
-    xmin = int(np.min(mask_voxel_coords[2]))
-    xmax = int(np.max(mask_voxel_coords[2])) + 1
-    out_bbox = {'zmin': zmin,
-                'zmax': zmax,
-                'ymin': ymin,
-                'ymax': ymax,
-                'xmin': xmin,
-                'xmax': xmax}
-    return out_bbox
-
+	mask = torch.from_numpy(mask)
+	mask_voxel_coords = torch.nonzero(mask)
+	zmin = int(torch.min(mask_voxel_coords[:, 0]))
+	zmax = int(torch.max(mask_voxel_coords[:, 0])) + 1
+	ymin = int(torch.min(mask_voxel_coords[:, 1]))
+	ymax = int(torch.max(mask_voxel_coords[:, 1])) + 1
+	xmin = int(torch.min(mask_voxel_coords[:, 2]))
+	xmax = int(torch.max(mask_voxel_coords[:, 2])) + 1
+	out_bbox = {'zmin': zmin,
+				'zmax': zmax,
+				'ymin': ymin,
+				'ymax': ymax,
+				'xmin': xmin,
+				'xmax': xmax}
+	return out_bbox
 
 
 # **********************************
@@ -190,6 +190,7 @@ def resampleVolume(vol, outspacing, mask=False):
     paras：
     outpacing：指定的spacing，例如[1,1,1]
     vol：sitk读取的image信息，这里是体数据\n
+    :param rate=2   1/2重叠滑块
     return：重采样后的数据
     """
     outsize = [0, 0, 0]
