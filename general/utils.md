@@ -328,7 +328,8 @@ def detect_endpoint(center_line):
     :return:        endpoint:三维矩阵形式的坐标显示  
         coordinates：坐标点  
         num_endpoint：端点个数  
-    """    points_index = np.argwhere(center_line)  
+    """    
+    points_index = np.argwhere(center_line)  
     end_point = np.zeros_like(center_line)  
     items = list(itertools.product([-1, 0, 1], [-1, 0, 1], [-1, 0, 1]))  
     coordinates = []  
@@ -788,4 +789,844 @@ def elastic_transform(image, image2, image3, alpha, sigma):
 	distored_image3 = map_coordinates(image3, indices, order=1, mode='reflect')
 
 	return distored_image.reshape(image.shape), distored_image2.reshape(image.shape), distored_image3.reshape(image.shape)
+```
+
+# 终端输出打印信息控制
+```python
+import contextlib
+class DummyFile(object):
+
+	def write(self, x): pass
+
+@contextlib.contextmanager
+def nostdout(verbose=False):
+	if not verbose:
+		save_stdout = sys.stdout
+		sys.stdout = DummyFile()
+		yield
+		sys.stdout = save_stdout
+	else:
+		yield
+
+with nostdout(not verbose):
+    function(args)
+```
+
+# grid sample dataset
+```python
+"""data loader."""
+
+
+import os
+
+import random
+
+from tracemalloc import start
+
+from typing import List, Union
+
+from skimage.morphology import dilation, erosion
+
+import numpy as np
+
+import SimpleITK as sitk
+
+from starship.umtf.common import build_pipelines
+
+from starship.umtf.common.dataset import DATASETS
+
+from starship.umtf.service.component import DefaultSampleDataset
+
+import torch
+
+from scipy import ndimage
+
+  
+
+def load_nii(nii_path):
+
+tmp_img = sitk.ReadImage(nii_path)
+
+data_np = sitk.GetArrayFromImage(tmp_img)
+
+return data_np
+
+  
+  
+
+# SampleDataset适用于3D分割场景，一般场景请使用CustomDataset
+
+@DATASETS.register_module
+
+class Segmask3D_Sample_Dataset(DefaultSampleDataset):
+
+  
+
+def __init__(
+
+self,
+
+data_root_path,
+
+dst_list_file,
+
+win_level,
+
+win_width,
+
+patch_size,
+
+sample_frequent,
+
+rotation_prob,
+
+rot_range,
+
+pipelines,
+
+):
+
+self._data_file_list = self._load_file_list(dst_list_file, data_root_path)
+
+self.win_level = win_level
+
+self.win_width = win_width
+
+self._sample_frequent = sample_frequent
+
+self.patch_size = patch_size
+
+self._rot_range = rot_range
+
+self.rotation_prob = rotation_prob
+
+self._pipelines = build_pipelines(pipelines)
+
+  
+
+def _load_file_list(self, dst_list_file, root_dir):
+
+data_file_list = []
+
+with open(dst_list_file, "r") as f:
+
+for line in f:
+
+line = line.strip()
+
+line = os.path.join(root_dir, line)
+
+if not os.path.exists(line):
+
+print(f"{line} not exist")
+
+continue
+
+data_file_list.append(line)
+
+# data_file_list = data_file_list * self._sample_frequent
+
+# data_file_list = data_file_list[:3]
+
+assert len(data_file_list) != 0, "has no avilable file in dst_list_file"
+
+return data_file_list
+
+  
+
+def _load_files(self, file_list: Union[List[str], str]):
+
+data_file_list = []
+
+if isinstance(file_list, str):
+
+return self._load_file_list(file_list)
+
+elif isinstance(file_list, (tuple, list)):
+
+for i in file_list:
+
+data_file_list.extend(self._load_file_list(i))
+
+return data_file_list
+
+else:
+
+raise ValueError('dst_list_file only support str, list, tuple')
+
+  
+
+def _load_source_data(self, filename):
+
+data = np.load(filename, allow_pickle = True)
+
+result = {}
+
+for k in data.keys():
+
+result[k] = data[k]
+
+return result
+
+  
+
+@property
+
+def sampled_data_count(self):
+
+return self._sample_frequent * self.source_data_count
+
+  
+
+@property
+
+def source_data_count(self):
+
+return len(self._data_file_list)
+
+  
+
+def __getitem__(self, idx):
+
+source_data = self._load_source_data(self._data_file_list[idx])
+
+return [self._data_file_list[idx], source_data]
+
+  
+
+def __len__(self):
+
+"""get number of data."""
+
+return self.source_data_count
+
+  
+
+def sample_source_data(self, idx, source_data):
+
+"""get data for train."""
+
+sample = None
+
+if idx < self._sample_frequent:
+
+sample = self._sample_source_data(idx, source_data)
+
+sample = self._pipelines(sample)
+
+return sample
+
+  
+  
+
+def _sample_source_data(self, idx, source_data_info):
+
+info, _source_data = source_data_info
+
+  
+
+ori_spacing = _source_data['ori_spacing']
+
+cut_bbox=np.array(_source_data['cut_bbox'])
+
+vol_shape = _source_data['vol'].shape
+
+crop_center_list = self._gen_regular_crop_center(cut_bbox, ori_spacing)
+
+crop_center_list_gt = self._gen_gt_crop_center(_source_data['gt'], ori_spacing)
+
+vol = torch.from_numpy((_source_data['vol'].copy())[None, None]).float()
+
+mask = torch.from_numpy(((_source_data['gt'].copy())[None, None] > 0).astype(np.float32))
+
+center_heatmap = torch.from_numpy((_source_data['center_heatmap'].copy())[None, None]).float()
+
+bilinear_tensor = torch.cat([vol, center_heatmap], dim=1)
+
+nearest_tensor = mask.clone()
+
+with torch.no_grad():
+
+#采样时
+
+if len(crop_center_list_gt) > 1 and random.random() < 0.6:
+
+c_t = self._get_random_crop_center(crop_center_list_gt)
+
+else:
+
+c_t = self._get_random_crop_center(crop_center_list)
+
+  
+
+bilinear_tensor_cut, nearest_tensor_cut = self._crop_data(bilinear_tensor, nearest_tensor, c_t, vol_shape, ori_spacing)
+
+if nearest_tensor_cut.sum() == 0:
+
+return None
+
+bilinear_tensor = torch.cat((bilinear_tensor_cut, nearest_tensor_cut),dim=0)
+
+results = {"bilinear_tensor": bilinear_tensor.detach()}
+
+# # debug
+
+# import time
+
+# name = str(time.time())
+
+# vol_debug = results['bilinear_tensor'][0].cpu().numpy()
+
+# heatmap_debug = results['bilinear_tensor'][1].cpu().numpy()
+
+# mask_debug = results['bilinear_tensor'][2].cpu().numpy()
+
+# sitk.WriteImage(sitk.GetImageFromArray(vol_debug), os.path.join('./data/debug', name + 'vol.nii.gz'))
+
+# sitk.WriteImage(sitk.GetImageFromArray(heatmap_debug),os.path.join('./data/debug', name + 'heatmap.nii.gz'))
+
+# sitk.WriteImage(sitk.GetImageFromArray(mask_debug), os.path.join('./data/debug', name + 'mask.nii.gz'))
+
+  
+
+return results
+
+  
+
+def _gen_gt_crop_center(self, gt, src_spacing):
+
+center_pool = np.argwhere(gt)
+
+center_pool = center_pool * src_spacing
+
+return center_pool
+
+  
+
+def _gen_regular_crop_center(self, bbox, src_spacing):
+
+zmin, zmax, ymin, ymax, xmin, xmax = bbox
+
+src_spacing = (src_spacing[0], src_spacing[1], src_spacing[2])
+
+  
+
+bbox = ((zmin, zmax), (ymin, ymax), (xmin, xmax))
+
+half_patch_size = [v // 2 for v in self.patch_size]
+
+  
+
+crop_range = []
+
+for (hr_min, hr_max), hpsi, ss, ts in zip(
+
+bbox, half_patch_size, src_spacing, src_spacing
+
+):
+
+tmp_range = np.arange(hr_min * ss + hpsi * ts, hr_max * ss, (hpsi * 2 - 2) * ts)
+
+if len(tmp_range) == 0:
+
+tmp_range = [hr_max * ss - hpsi * ts]
+
+tmp_range[-1] = min(tmp_range[-1], hr_max * ss - hpsi * ts)
+
+crop_range.append(tmp_range)
+
+  
+
+c_t_list = []
+
+for z_t in crop_range[0]:
+
+for y_t in crop_range[1]:
+
+for x_t in crop_range[2]:
+
+c_t = (z_t, y_t, x_t)
+
+c_t_list.append(c_t)
+
+  
+
+c_t_list = np.array(c_t_list)
+
+  
+
+return c_t_list
+
+  
+
+def _get_random_crop_center(self, crop_center_list, shift_range=20):
+
+idx_c_t = np.random.choice(len(crop_center_list))
+
+c_t = crop_center_list[idx_c_t, :]
+
+c_t = (
+
+c_t
+
++ np.random.randint(-shift_range, shift_range, size=(3,))
+
+)
+
+return c_t
+
+  
+
+def _crop_data(self, bilinear_tensor, nearest_tensor, c_t, src_shape, src_spacing):
+
+  
+
+src_shape = np.array(src_shape)
+
+half_patch_size = [v // 2 for v in self.patch_size]
+
+  
+
+rot_mat = None
+
+if random.random() <= self.rotation_prob:
+
+rot_mat = self._rotate_aug(self._rot_range)
+
+  
+
+grid = self._get_sample_grid(
+
+c_t, half_patch_size, src_spacing, src_shape, src_spacing, rot_mat
+
+)
+
+  
+
+bilinear_tensor = torch.nn.functional.grid_sample(
+
+bilinear_tensor, grid, mode="bilinear", align_corners=True
+
+)[0]
+
+nearest_tensor = torch.nn.functional.grid_sample(
+
+nearest_tensor, grid, mode="nearest", align_corners=True
+
+)[0]
+
+  
+
+return bilinear_tensor, nearest_tensor
+
+def _rotate_aug(self, rot_range):
+
+z_angle = (np.random.random() * 2 - 1) * rot_range[0] / 180.0 * np.pi
+
+y_angle = (np.random.random() * 2 - 1) * rot_range[1] / 180.0 * np.pi
+
+x_angle = (np.random.random() * 2 - 1) * rot_range[2] / 180.0 * np.pi
+
+  
+
+rot_mat = self._get_rotate_mat(z_angle, y_angle, x_angle)
+
+return rot_mat.astype(np.float32)
+
+def _get_sample_grid(
+
+self, center_point, half_patch_size, src_spacing, src_shape, tgt_spacing, rot_mat=None,
+
+):
+
+grid = []
+
+start_points = []
+
+for cent_px, ts, ps_half in zip(center_point, tgt_spacing, half_patch_size):
+
+p_s = cent_px - ps_half * ts
+
+p_e = cent_px + ps_half * ts - (ts / 2)
+
+grid.append(np.arange(p_s, p_e, ts))
+
+start_points.append(p_s)
+
+start_points = np.array(start_points)
+
+grid = np.meshgrid(*grid)
+
+grid = [g[:, :, :, None] for g in grid] # shape (h,d,w,(zyx))
+
+grid = np.concatenate(grid, axis=-1)
+
+grid = np.transpose(grid, axes=(1, 0, 2, 3)) # shape (d,h,w,(zyx))
+
+  
+
+if rot_mat is not None:
+
+grid -= center_point[None, None, None, :]
+
+grid = np.matmul(grid, np.linalg.inv(rot_mat))
+
+grid += center_point[None, None, None, :]
+
+  
+
+grid *= 2
+
+grid /= src_spacing[None, None, None, :]
+
+grid /= (src_shape - 1)[None, None, None, :]
+
+grid -= 1
+
+# change z,y,x to x,y,z
+
+grid = np.array(grid[:, :, :, ::-1], dtype=np.float32)
+
+return torch.from_numpy(grid)[None]
+
+  
+
+def _get_rotate_mat(self, z_angle, y_angle, x_angle):
+
+def _create_matrix_rotation_z_3d(angle, matrix=None):
+
+rotation_x = np.array(
+
+[
+
+[1, 0, 0],
+
+[0, np.cos(angle), -np.sin(angle)],
+
+[0, np.sin(angle), np.cos(angle)],
+
+]
+
+)
+
+if matrix is None:
+
+return rotation_x
+
+return np.dot(matrix, rotation_x)
+
+  
+
+def _create_matrix_rotation_y_3d(angle, matrix=None):
+
+rotation_y = np.array(
+
+[
+
+[np.cos(angle), 0, np.sin(angle)],
+
+[0, 1, 0],
+
+[-np.sin(angle), 0, np.cos(angle)],
+
+]
+
+)
+
+if matrix is None:
+
+return rotation_y
+
+  
+
+return np.dot(matrix, rotation_y)
+
+  
+
+def _create_matrix_rotation_x_3d(angle, matrix=None):
+
+rotation_z = np.array(
+
+[
+
+[np.cos(angle), -np.sin(angle), 0],
+
+[np.sin(angle), np.cos(angle), 0],
+
+[0, 0, 1],
+
+]
+
+)
+
+if matrix is None:
+
+return rotation_z
+
+  
+
+return np.dot(matrix, rotation_z)
+
+  
+
+rot_matrix = np.identity(3)
+
+rot_matrix = _create_matrix_rotation_z_3d(z_angle, rot_matrix)
+
+rot_matrix = _create_matrix_rotation_y_3d(y_angle, rot_matrix)
+
+rot_matrix = _create_matrix_rotation_x_3d(x_angle, rot_matrix)
+
+return rot_matrix
+
+def __normalization__(self, vol_np):
+
+win = [self.win_level - self.win_width / 2, self.win_level + self.win_width / 2]
+
+vol = vol_np.astype('float32')
+
+vol = np.clip(vol, win[0], win[1])
+
+vol -= win[0]
+
+vol /= self.win_width
+
+return vol
+
+  
+
+def data_aug(self,vol, mask):
+
+# flip z,y,x
+
+if random.random() < 0.5:
+
+vol = vol[::-1, :, :]
+
+mask = mask[::-1, :, :]
+
+if random.random() < 0.5:
+
+vol = vol[:, ::-1, :]
+
+mask = mask[:, ::-1, :]
+
+if random.random() < 0.5:
+
+vol = vol[:, :, ::-1]
+
+mask = mask[:, :, ::-1]
+
+# rotate
+
+if random.random() < 0.5: # xy
+
+angle = random.uniform(-20, 20)
+
+vol = ndimage.rotate(vol.copy(), angle, axes=(1, 2), reshape=False, cval=-2000)
+
+mask = np.round(ndimage.rotate(mask.copy(), angle, axes=(1, 2), reshape=False, cval=0))
+
+  
+
+angle = random.uniform(-20, 20)
+
+vol = ndimage.rotate(vol.copy(), angle, axes=(0, 2), reshape=False, cval=-2000)
+
+mask = np.round(ndimage.rotate(mask.copy(), angle, axes=(0, 2), reshape=False, cval=0))
+
+  
+
+angle = random.uniform(-20, 20)
+
+vol = ndimage.rotate(vol.copy(), angle, axes=(0, 1), reshape=False, cval=-2000)
+
+mask = np.round(ndimage.rotate(mask.copy(), angle, axes=(0, 1), reshape=False, cval=0))
+
+if random.random() < 0.3:
+
+mn = vol.min()
+
+coefficient = random.uniform(0.9, 1.1)
+
+vol = (vol.copy() - mn) * coefficient + mn
+
+if random.random() < 0.3:
+
+mn = vol.mean()
+
+sd = vol.std()
+
+gamma = np.random.uniform(0.9, 1.1)
+
+minm = vol.min()
+
+rnge = vol.max() - minm
+
+ct_res = np.power((vol.copy() - minm) / float(rnge + 1e-7), gamma) * rnge + minm
+
+  
+
+ct_res = ct_res - ct_res.mean()
+
+ct_res = ct_res / (ct_res.std() + 1e-8) * sd
+
+vol = ct_res + mn
+
+return vol, mask.astype(np.uint8)
+
+  
+  
+  
+
+def get_boundaries_from_mask(mask):
+
+mask_voxel_coords = np.where(mask != 0)
+
+zmin = int(np.min(mask_voxel_coords[0]))
+
+zmax = int(np.max(mask_voxel_coords[0])) + 1
+
+ymin = int(np.min(mask_voxel_coords[1]))
+
+ymax = int(np.max(mask_voxel_coords[1])) + 1
+
+xmin = int(np.min(mask_voxel_coords[2]))
+
+xmax = int(np.max(mask_voxel_coords[2])) + 1
+
+out_bbox = {'zmin': zmin,
+
+'zmax': zmax,
+
+'ymin': ymin,
+
+'ymax': ymax,
+
+'xmin': xmin,
+
+'xmax': xmax}
+
+return out_bbox
+
+  
+
+def _affine_elastic_transform_3d(vol, seg, alpha=[2.0, 2.0, 2.0], smooth_num=4, win=[5, 5, 5], field_size=[17, 17, 17]):
+
+batch_size = vol.size(0)
+
+aff_matrix = torch.zeros([batch_size, 3, 4])
+
+aff_matrix[:, 0, 0] = 1
+
+aff_matrix[:, 1, 1] = 1
+
+aff_matrix[:, 2, 2] = 1
+
+  
+
+grid = torch.nn.functional.affine_grid(aff_matrix, vol.size())
+
+  
+
+pad = [win[i] // 2 for i in range(3)]
+
+fs = field_size
+
+dz = torch.rand(1, 1, fs[0] + pad[0] * 2, fs[1] + pad[1] * 2, fs[2] + pad[2] * 2)
+
+dy = torch.rand(1, 1, fs[0] + pad[0] * 2, fs[1] + pad[1] * 2, fs[2] + pad[2] * 2)
+
+dx = torch.rand(1, 1, fs[0] + pad[0] * 2, fs[1] + pad[1] * 2, fs[2] + pad[2] * 2)
+
+dz = (dz - 0.5) * 2.0 * alpha[0]
+
+dy = (dy - 0.5) * 2.0 * alpha[1]
+
+dx = (dx - 0.5) * 2.0 * alpha[2]
+
+  
+
+for _ in range(smooth_num):
+
+dz = __smooth_3d__(dz, win)
+
+dy = __smooth_3d__(dy, win)
+
+dx = __smooth_3d__(dx, win)
+
+  
+
+dz = dz[:, :, pad[0]: pad[0] + fs[0], pad[1]: pad[1] + fs[1], pad[2]: pad[2] + fs[2]]
+
+dy = dy[:, :, pad[0]: pad[0] + fs[0], pad[1]: pad[1] + fs[1], pad[2]: pad[2] + fs[2]]
+
+dx = dx[:, :, pad[0]: pad[0] + fs[0], pad[1]: pad[1] + fs[1], pad[2]: pad[2] + fs[2]]
+
+  
+
+size_3d = [vol.size(2), vol.size(3), vol.size(4)]
+
+dz = torch.nn.functional.interpolate(dz, size=size_3d, mode="trilinear", align_corners=False).repeat(
+
+batch_size, 1, 1, 1, 1
+
+)
+
+dy = torch.nn.functional.interpolate(dy, size=size_3d, mode="trilinear", align_corners=False).repeat(
+
+batch_size, 1, 1, 1, 1
+
+)
+
+dx = torch.nn.functional.interpolate(dx, size=size_3d, mode="trilinear", align_corners=False).repeat(
+
+batch_size, 1, 1, 1, 1
+
+)
+
+  
+
+grid[:, :, :, :, 0] += dz[:, 0, :, :, :]
+
+grid[:, :, :, :, 1] += dy[:, 0, :, :, :]
+
+grid[:, :, :, :, 2] += dx[:, 0, :, :, :]
+
+  
+
+vol_o = torch.nn.functional.grid_sample(vol, grid, mode="bilinear")
+
+seg_o = torch.nn.functional.grid_sample(seg, grid, mode="nearest")
+
+return vol_o, seg_o
+
+  
+  
+
+def __smooth_3d__(vol, win):
+
+kernel = torch.ones([1, vol.size(1), win[0], win[1], win[2]])
+
+pad_size = [
+
+(int)((win[2] - 1) / 2),
+
+(int)((win[2] - 1) / 2),
+
+(int)((win[1] - 1) / 2),
+
+(int)((win[1] - 1) / 2),
+
+(int)((win[0] - 1) / 2),
+
+(int)((win[0] - 1) / 2),
+
+]
+
+vol = torch.nn.functional.pad(vol, pad_size, "replicate")
+
+vol_s = torch.nn.functional.conv3d(vol, kernel, stride=(1, 1, 1)) / torch.sum(kernel)
+
+return vol_s
 ```
