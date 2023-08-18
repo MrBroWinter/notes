@@ -1,3 +1,12 @@
+# 源
+pip config set global.index-url https://mirrors.huaweicloud.com/repository/pypi/simple/
+华为源：https://mirrors.huaweicloud.com/repository/pypi/simple/
+豆瓣源：http://mirrors.aliyun.com/pypi/simple/
+阿里源：https://mirrors.aliyun.com/pypi/simple/
+推想源：https://repos.infervision.com/repository/pypi/simple
+```
+
+
 ```python
 import random
 import numpy as np
@@ -275,6 +284,7 @@ def overlap_predict(net, ct, patch_size, rate=2):
 
                     # print(ct_tensor.shape)
                     outputs = net(ct_tensor)
+                    outputs = torch.sigmoid(outputs)
                     outputs = outputs.squeeze().cpu().detach().numpy()
                     # 将预测的结果加入到对应的位置上
                     tmp_res[zz * slide_rate[0]:zz * slide_rate[0] + patch_size[0],

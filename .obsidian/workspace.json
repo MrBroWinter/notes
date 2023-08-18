@@ -13,26 +13,13 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "general/utils.md",
-                "mode": "source",
-                "source": false
-              }
-            }
-          },
-          {
-            "id": "428fb711b781dedd",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "general/utils.md",
+                "file": "registration/registration.md",
                 "mode": "source",
                 "source": false
               }
             }
           }
-        ],
-        "currentTab": 1
+        ]
       }
     ],
     "direction": "vertical"
@@ -106,7 +93,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "general/utils.md",
+                "file": "registration/registration.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -134,7 +121,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "general/utils.md"
+                "file": "registration/registration.md"
               }
             }
           }
@@ -157,18 +144,19 @@
       "workspaces:Manage workspace layouts": false
     }
   },
-  "active": "428fb711b781dedd",
+  "active": "64cb76b79b45b74f",
   "lastOpenFiles": [
-    "general/Loss Function.md",
     "general/utils.md",
-    "general/python进阶.md",
+    "registration/registration.md",
     "general/tmux.md",
     "general/推想专用.md",
-    "general/python加速（C++）.md",
+    "general/python进阶.md",
+    "00 inbox/demo1.md",
     "general/git.md",
+    "general/Loss Function.md",
+    "general/python加速（C++）.md",
     "general/数据结构算法.md",
     "general/图卷积.md",
-    "00 inbox/demo1.md",
     "attachment/Pasted image 20220704094247.png",
     "general/配置环境.md",
     "general/目标检测.md",
