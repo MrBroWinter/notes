@@ -8,14 +8,14 @@
         "type": "tabs",
         "children": [
           {
-            "id": "64cb76b79b45b74f",
+            "id": "09033a71357914d5",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "registration/registration.md",
+                "file": "general/SimpltITK.md",
                 "mode": "source",
-                "source": false
+                "source": true
               }
             }
           }
@@ -93,7 +93,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "registration/registration.md",
+                "file": "general/SimpltITK.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -121,7 +121,17 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "registration/registration.md"
+                "file": "general/SimpltITK.md"
+              }
+            }
+          },
+          {
+            "id": "0bf11bb621e982a4",
+            "type": "leaf",
+            "state": {
+              "type": "all-properties",
+              "state": {
+                "sortOrder": "frequency"
               }
             }
           }
@@ -144,23 +154,25 @@
       "workspaces:Manage workspace layouts": false
     }
   },
-  "active": "64cb76b79b45b74f",
+  "active": "09033a71357914d5",
   "lastOpenFiles": [
-    "general/utils.md",
-    "registration/registration.md",
-    "general/tmux.md",
-    "general/推想专用.md",
-    "general/python进阶.md",
     "00 inbox/demo1.md",
+    "general/utils.md",
+    "general/推想专用.md",
+    "general/SimpltITK.md",
+    "registration/registration.md",
     "general/git.md",
-    "general/Loss Function.md",
-    "general/python加速（C++）.md",
-    "general/数据结构算法.md",
+    "general/vim.md",
     "general/图卷积.md",
-    "attachment/Pasted image 20220704094247.png",
+    "general/数据结构算法.md",
     "general/配置环境.md",
     "general/目标检测.md",
     "general/linux指令.md",
-    "general/vim.md"
+    "general/Loss Function.md",
+    "general/monai.md",
+    "general/python加速（C++）.md",
+    "general/python进阶.md",
+    "general/tmux.md",
+    "attachment/Pasted image 20220704094247.png"
   ]
 }

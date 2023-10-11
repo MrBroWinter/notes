@@ -88,3 +88,12 @@ git push origin :refs/tags/<tag名>
 
 ## 拉取当前分支
 git pull
+
+# 新增submodule
+> git submodule add https://github.com/username/project-sub-1.git
+
+此时会出现.gitmodules以及新的仓库，注意路径
+
+# 删除submodule
+> git submodule deinit <project-sub-1>
+> git rm <project-sub-1>
