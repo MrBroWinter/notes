@@ -13,7 +13,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "general/git.md",
+                "file": "general/utils.md",
                 "mode": "source",
                 "source": true
               }
@@ -93,7 +93,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "general/git.md",
+                "file": "general/utils.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -121,7 +121,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "general/git.md"
+                "file": "general/utils.md"
               }
             }
           },
@@ -156,25 +156,25 @@
   },
   "active": "09033a71357914d5",
   "lastOpenFiles": [
+    "general/SimpltITK.md",
+    "general/tmux.md",
+    "general/vim.md",
+    "general/utils.md",
+    "general/配置环境.md",
+    "general/git.md",
     "README.md~",
     "README.md",
-    "general/utils.md",
-    "general/SimpltITK.md",
     "00 inbox/demo1.md",
     "general/推想专用.md",
     "registration/registration.md",
-    "general/git.md",
-    "general/vim.md",
     "general/图卷积.md",
     "general/数据结构算法.md",
-    "general/配置环境.md",
     "general/目标检测.md",
     "general/linux指令.md",
     "general/Loss Function.md",
     "general/monai.md",
     "general/python加速（C++）.md",
     "general/python进阶.md",
-    "general/tmux.md",
     "attachment/Pasted image 20220704094247.png"
   ]
 }
