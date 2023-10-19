@@ -1,1 +1,1 @@
-# This is a note for study bbbb
+# This is a note for study
