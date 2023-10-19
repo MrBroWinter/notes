@@ -13,7 +13,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "general/utils.md",
+                "file": "general/git.md",
                 "mode": "source",
                 "source": true
               }
@@ -93,7 +93,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "general/utils.md",
+                "file": "general/git.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -121,7 +121,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "general/utils.md"
+                "file": "general/git.md"
               }
             }
           },
@@ -156,9 +156,11 @@
   },
   "active": "09033a71357914d5",
   "lastOpenFiles": [
+    "README.md~",
+    "README.md",
+    "general/utils.md",
     "general/SimpltITK.md",
     "00 inbox/demo1.md",
-    "general/utils.md",
     "general/推想专用.md",
     "registration/registration.md",
     "general/git.md",

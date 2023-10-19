@@ -1,1 +1,1 @@
-# This is a note for study (rebase)
+# This is a note for study
