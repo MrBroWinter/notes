@@ -1639,4 +1639,171 @@ vol = torch.nn.functional.pad(vol, pad_size, "replicate")
 vol_s = torch.nn.functional.conv3d(vol, kernel, stride=(1, 1, 1)) / torch.sum(kernel)
 
 return vol_s
+
+```
+
+# coarse2fine Unet
+![[Pasted image 20231025114422.png]]
+
+# 广度优先搜索去除sk的杂分支
+```python
+def bfs_3d(data, start):
+    path=[]
+    d,h,w = data.shape
+    queue = deque()
+    queue.append(start)
+    visited = []
+    while queue:
+        node = queue.popleft()
+        path.append(node)
+        visited.append(node)
+        items = list(itertools.product([-1, 0, 1], [-1, 0, 1], [-1, 0, 1]))
+        for sub in items:
+            cur_neighbor = node + np.array(sub)
+            if np.all(cur_neighbor >=0) and np.all(cur_neighbor < np.array([d,h,w])):   # 防止越界
+                if data[cur_neighbor[0],cur_neighbor[1], cur_neighbor[2]] > 0:  # 如果是候选点
+                    if not list(cur_neighbor) in np.array(visited).tolist():   # 如果没有被标记
+                        queue.append(cur_neighbor)
+                        visited.append(cur_neighbor)
+    return path
+
+path = bfs_3d(center_line, colon_start)`
+start = len(path) - 1 
+while start > 0:
+    if np.linalg.norm(path[start] - path[start - 1]) <= np.sqrt(3):   # 说明这是同一个path的
+        start -= 1
+    else:
+        path.pop(start - 1)   # 说明start 和start -1 这两个像素点属于 两个分支的，要去掉一个
+        start = min(len(path) - 1, start)     # 防止第一次pop出去了之后，索引超出范围
+path = np.array(path)
+```
+
+# dijkstra 
+```python
+import numpy as np
+
+import math
+
+def get_adj_matrix(arr):
+
+points = np.argwhere(arr)
+
+points_idx = np.arange(len(points))
+
+adj_m_axis = points-points[:, None]
+
+if len(arr.shape) == 3:
+
+adj_m = np.sqrt(np.square(adj_m_axis[:, :, 0]) + np.square(adj_m_axis[:, :, 1]) + np.square(adj_m_axis[:, :, 2]))
+
+adj_m = (np.bitwise_and(adj_m <= math.sqrt(3), adj_m > 0)).astype(np.uint8)
+
+elif len(arr.shape) == 2:
+
+adj_m = np.sqrt(np.square(adj_m_axis[:, :, 0]) + np.square(adj_m_axis[:, :, 1]))
+
+adj_m = (np.bitwise_and(adj_m <= math.sqrt(2), adj_m > 0)).astype(np.uint8)
+
+return adj_m, points, points_idx
+
+  
+  
+
+def dijkstra(arr, start, end):
+
+adj_m, points, points_idx = get_adj_matrix(arr)
+
+start_index = (points.tolist()).index(start.tolist()) # 起点对应的邻接矩阵的索引
+
+end_index = (points.tolist()).index(end.tolist())
+
+num_points = len(points)
+
+distance = [np.inf] * num_points # 到达各个点的最短距离
+
+path_optimal = [[]] * num_points # 到达各个点最短路径
+
+# 初始化
+
+S= [start_index] # 已找到最短路径的节点结合
+
+U = [v for v in range(len(points)) if v not in S] # 还未确定最短路径的集合
+
+distance[start_index] = 0
+
+path_optimal[start_index] = [start_index]
+
+while len(S) < num_points: # 没有搜索完就继续
+
+min_value = np.inf
+
+col = -1
+
+row = -1
+
+for s in S:
+
+for u in U:
+
+if adj_m[s][u] > 0:
+
+if adj_m[s][u] + distance[s] < min_value:
+
+min_value = adj_m[s][u] + distance[s]
+
+row = s # row为当前节点
+
+col = u # col为当前节点的邻接点
+
+if col == -1 or row == -1: # 说明该节点没有连通点了，走到死胡同了
+
+break
+
+# 找到了下一个点之后
+
+S.append(col) # 在已遍历的节点列表中新增新节点
+
+U.remove(col) # 在未遍历的节点列表中删除新节点
+
+distance[col] = min_value
+
+path_optimal[col] = path_optimal[row][:] # 复制source到已找到节点的上一节点的路径
+
+path_optimal[col].append(col)
+
+if col == end_index:
+
+res_distance = distance[end_index]
+
+res_path = list(map(lambda x: points[x], path_optimal[end_index]))
+
+return res_path, res_distance
+
+return None
+
+  
+
+a = np.array([[0,1,1,1,1,1,0],
+
+[0,1,0,1,0,1,1],
+
+[0,1,0,1,0,0,1],
+
+[0,1,0,1,0,0,1],
+
+[0,1,0,1,0,0,1],
+
+[1,1,0,1,0,0,1],
+
+[1,0,0,1,0,0,1],
+
+[1,1,1,1,1,1,1]])
+
+start_p = np.array([0,1])
+
+end_p = np.array([7,0])
+
+path_optimal, distance = dijkstra(a, start_p, end_p)
+
+print(distance, path_optimal)
 ```
