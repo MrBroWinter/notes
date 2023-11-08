@@ -4,11 +4,11 @@
     "type": "split",
     "children": [
       {
-        "id": "783f2453c6d88e3e",
+        "id": "3b262be2e8a1462b",
         "type": "tabs",
         "children": [
           {
-            "id": "09033a71357914d5",
+            "id": "a12c4eb445432084",
             "type": "leaf",
             "state": {
               "type": "markdown",
@@ -154,12 +154,12 @@
       "workspaces:Manage workspace layouts": false
     }
   },
-  "active": "09033a71357914d5",
+  "active": "a12c4eb445432084",
   "lastOpenFiles": [
+    "general/utils.md",
     "attachment/Pasted image 20231025114422.png",
     "attachment/Pasted image 20231024191437.png",
     "attachment/Pasted image 20220704094247.png",
-    "general/utils.md",
     "general/Loss Function.md",
     "general/git.md",
     "00 inbox/demo1.md",
