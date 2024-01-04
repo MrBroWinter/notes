@@ -4,8 +4,6 @@ pip config set global.index-url https://mirrors.huaweicloud.com/repository/pypi/
 豆瓣源：http://mirrors.aliyun.com/pypi/simple/
 阿里源：https://mirrors.aliyun.com/pypi/simple/
 推想源：https://repos.infervision.com/repository/pypi/simple
-```
-
 
 ```python
 import random

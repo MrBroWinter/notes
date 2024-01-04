@@ -13,7 +13,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "general/utils.md",
+                "file": "general/推想专用.md",
                 "mode": "source",
                 "source": false
               }
@@ -93,7 +93,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "general/utils.md",
+                "file": "general/推想专用.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -121,7 +121,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "general/utils.md"
+                "file": "general/推想专用.md"
               }
             }
           },
@@ -131,7 +131,9 @@
             "state": {
               "type": "all-properties",
               "state": {
-                "sortOrder": "frequency"
+                "sortOrder": "frequency",
+                "showSearch": false,
+                "searchQuery": ""
               }
             }
           }
@@ -157,26 +159,26 @@
   "active": "a12c4eb445432084",
   "lastOpenFiles": [
     "general/utils.md",
-    "attachment/Pasted image 20231025114422.png",
-    "attachment/Pasted image 20231024191437.png",
-    "attachment/Pasted image 20220704094247.png",
-    "general/Loss Function.md",
-    "general/git.md",
+    "general/推想专用.md",
     "00 inbox/demo1.md",
+    "general/配置环境.md",
+    "general/git.md",
+    "general/linux指令.md",
+    "general/Loss Function.md",
+    "general/python加速（C++）.md",
+    "general/python进阶.md",
     "general/SimpltITK.md",
     "general/tmux.md",
     "general/vim.md",
-    "general/配置环境.md",
-    "README.md~",
-    "README.md",
-    "general/推想专用.md",
-    "registration/registration.md",
-    "general/图卷积.md",
     "general/数据结构算法.md",
     "general/目标检测.md",
-    "general/linux指令.md",
-    "general/monai.md",
-    "general/python加速（C++）.md",
-    "general/python进阶.md"
+    "general/study.md",
+    "general/图卷积.md",
+    "attachment/Pasted image 20231025114422.png",
+    "attachment/Pasted image 20231024191437.png",
+    "attachment/Pasted image 20220704094247.png",
+    "README.md~",
+    "README.md",
+    "registration/registration.md"
   ]
 }

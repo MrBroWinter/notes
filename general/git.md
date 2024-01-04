@@ -103,8 +103,8 @@ git pull
    若当前开发分支feature落后于主分支master，需要用到rebase指令后才可以merge进入主分支master
 
 1. 首先在feature分支修改完代码后，正常commit 和 push
-2. git fetch 发现master分支有更新，然后checkout 到master分支，执行git pull origin master
-3. checkout到feature分支，执行git rebase （如果有冲突，则需要进行手动修改，最后一直执行git rebase --continue   知道修改完成）
+2. git fetch 发现master分支有更新，然后checkout 到master分支，执行git pull origin master(不能忘)
+3. checkout到feature分支，执行git rebase master（如果有冲突，则需要进行手动修改，最后一直执行git rebase --continue   知道修改完成）
 4. 需要在feature分支执行git pull ，然后进入一个界面，直接ctrl+z退出就行，此时可以用git log看一下是否已经rebase过来了
 5. 最后只需要commit 和push就可以了
 6. rebase后需要在网页界面正常提交MR了
